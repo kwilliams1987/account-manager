@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+    <head>
+        <title class="translate">Eye on My.money</title>
+        <link rel="stylesheet" href="css/layout.css">
+    </head>
+
+    <body>
+        <aside>
+            <h1 class="translate">Eye on My Money</h1>
+            <label for="month" class="translate">Month</label> <input type="month" id="month"><br>
+            <label for="expected" class="translate">Expected</label> <input type="text" id="expected" readonly><br>
+            <label for="paid" class="translate">Paid</label> <input type="text" id="paid" readonly><br>
+            <label for="remaining" class="translate">Remaining</label> <input type="text" id="remaining" readonly>
+        </aside>
+
+        <menu id="tab-picker">
+            <a href="#tab-pending" class="translate active">Pending Bills</a>
+            <a href="#tab-income" class="translate">Planned Income</a>
+            <a href="#tab-paid" class="translate">Paid Bills</a>
+            <a href="#tab-settings" class="translate">Settings</a>
+        </menu>
+
+        <main>
+            <section id="tab-pending">
+                <h2 class="translate">Pending Bills</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="translate">Name</th>
+                            <th class="translate">Budgetted</th>
+                            <th class="translate">Remaining</th>
+                            <td>
+                                <button id="schedule-bill" class="translate">Schedule Bill</button>
+                                <button id="unexpected-bill" class="translate">Unexpected Bill</button>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-bills">
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="tab-income" hidden>
+                <h2 class="translate">Planned Income</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="translate">Name</th>
+                            <th class="translate">Expected</th>
+                            <th class="translate">Received</th>
+                            <td>
+                                <button id="schedule-income" class="translate">Schedule Income</button>
+                                <button id="unexpected-income" class="translate">Unexpected Income</button>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody id="income">
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="tab-paid" hidden>
+                <h2 class="translate">Paid Bills</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="translate">Name</th>
+                            <th class="translate">Expected Cost</th>
+                            <th class="translate">Actual Cost</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="paid-bills">
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="tab-settings" hidden>
+                <h2 class="translate">Settings</h2>
+
+                <label for="locale" class="translate">Language:</label> <select id="locale"></select><br>
+                <label for="currency" class="translate">Currency:</label> <select id="currency"></select>
+            </section>
+        </main>
+
+        <footer>&copy; 2018 Kristian Williams</footer>
+
+        <script defer type="module" src="js/core.js"></script>
+    </body>
+</html>
