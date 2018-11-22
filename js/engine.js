@@ -38,6 +38,23 @@ export default class PaymentEngine {
                         this[internal].onchange.forEach(h => h({ caller: this }));
                         return;
                 }
+            },
+            async generateKey(password) {
+                if (!exportable)
+                    throw new Error(this.translate("Your browser doesn't support encryption"));
+
+                if (typeof password !== "string" || password.length < 6)
+                    throw new TypeError(engine.translate("Password must be at least {0} characters.", 6));
+
+                var encoder = new TextEncoder();
+                var algo = {
+                    name: 'PBKDF2',
+                    hash: 'SHA-256',
+                    salt: encoder.encode("AiAIOsdAAasf"),
+                    iterations: 1000
+                };
+                let key = await crypto.subtle.importKey('raw', encoder.encode(password), { name: 'PBKDF2'}, false, ['deriveKey']);
+                return crypto.subtle.deriveKey(algo, key, { name: "AES-GCM", length: 256 }, false, ['encrypt', 'decrypt']);
             }
         };
 
@@ -303,19 +320,55 @@ export default class PaymentEngine {
      * Encrypts the current storage set with the provided password, and returns the result.
      *
      * @param {String} password must be at least 6 characters long.
+     * @returns {Promise<string>}
      * @throws {Error} if encryption isn't supported.
      * @throws {TypeError} if the password isn't a string or is too weak.
      */
-    export(password) {
-        if (!exportable)
-            throw new Error("Your browser doesn't support encryption");
+    async export(password) {
+        return this[internal].generateKey(password).then(key => {
+            let encoder = new TextEncoder();
+            let algo = {
+                name: 'AES-GCM',
+                length: 256,
+                iv: crypto.getRandomValues(new Uint8Array(16))
+            };
 
-        if (typeof password !== "string" || password.length < 6)
-            throw new TypeError("password must be a string at least 6 characters long");
+            return crypto.subtle.encrypt(algo, key, encoder.encode(this[internal].storage.toJSON())).then(result => {
+                return JSON.stringify({
+                    cypherText: result,
+                    iv: algo.iv
+                });
+            });
+        });
+    }
 
-        throw new Error("Not implemented");
+    /**
+     * Decrypts the provided storage set with the password, and overwrites the current dataset.
+     *
+     * @param {String} password must be at least 6 characters long.
+     * @param {String} encrypted
+     * @returns {Promise<void>}
+     * @throws {Error} if encryption isn't supported.
+     * @throws {TypeError} if the password isn't a string or is too weak.
+     */
+    async import(password, encrypted) {
+        if (typeof encrypted === "text") {
+            encrypted = JSON.parse(encrypted);
+        }
 
-        return "";
+        this[internal].generateKey(password).then(key => {
+            let algo = {
+                name: 'AES-GCM',
+                length: 256,
+                iv: encrypted.iv
+            };
+
+            crypto.subtle.decrypt(algo, key, encrypted.cypherText).then(source => {
+                let result = new TextDecoder().decode(source);
+                localStorage.eyePaymentEngine = result;
+                this[internal].storage = new MoneyStorage(result);
+            });
+        });
     }
 
     toJSON() {

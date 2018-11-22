@@ -157,6 +157,24 @@ document.addEventListener("DOMContentLoaded", e => {
     translate(engine);
     document.querySelector('body').classList.add("loaded");
 
+    document.getElementById('export').addEventListener('click', e => {
+        e.preventDefault();
+
+        let password = prompt(engine.translate("Please provide a password:"));
+
+        engine.export(password).then(r => {
+            let a = document.createElement('a'), date = Date.now();
+            a.setAttribute('href', "data:text/plain;charset=utf-8," + encodeURIComponent(r));
+            a.setAttribute('download', 'export-' + date.getFullYear() + "-" + (date.getMonth < 9 ? "0" : "") + "-" + (date.getMonth() + 1) + date.getDate() + ".txt");
+            a.setAttribute('hidden', '');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }).catch(e => {
+            alert(engine.translate("Export failed: {0}.", e));
+        });
+    })
+
     document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click', e => {
         if (e.target instanceof HTMLElement) {
             if (e.target.nodeName === 'TBODY') {
