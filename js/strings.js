@@ -2,7 +2,29 @@
 
 const internal = Symbol("internal");
 
-export default class Strings {
+class ITranslate {
+    /**
+     * Attempt to translate the provided text into the users language.
+     *
+     * @param {String} string
+     * @param {...String} placeholders
+     */
+    translate(string, ...placeholders) {
+        placeholders.forEach(p => string = string.replace(new RegExp('\\{' + p + '\\}', 'gi'), placeholders[p]));
+        return string;
+    }
+
+    /**
+     * Format the provided number based on the current Storage set locale and currency.
+     *
+     * @param {Number} amount
+     */
+    formatCurrency(amount) {
+        throw new Error("Not implemented.");
+    }
+}
+
+class Strings {
     static get currencies() {
         return [
             { code: "EUR", name: "Euroes" },
@@ -88,7 +110,19 @@ Strings[internal] = {
         "Invalid backup selected": "Invalid backup selected",
         "Close": "Close",
         "Yes": "Yes",
-        "No": "No"
+        "No": "No",
+        "Okay": "Okay",
+        "Cost": "Cost",
+        "Start Date": "Start Date",
+        "End Date": "End Date",
+        "Recurrence": "Recurrence",
+        "Never": "Never",
+        "Monthly": "Monthly",
+        "Bi-Monthly": "Bi-Monthly",
+        "Quarterly": "Quarterly",
+        "Bi-Annually": "Bi-Annually",
+        "Annually": "Annually",
+        "Save": "Save"
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -140,7 +174,19 @@ Strings[internal] = {
         "Invalid backup selected": "Invalid backup selected",
         "Close": "Close",
         "Yes": "Yes",
-        "No": "No"
+        "No": "No",
+        "Okay": "Okay",
+        "Cost": "Cost",
+        "Start Date": "Start Date",
+        "End Date": "End Date",
+        "Recurrence": "Recurrence",
+        "Never": "Never",
+        "Monthly": "Monthly",
+        "Bi-Monthly": "Bi-Monthly",
+        "Quarterly": "Quarterly",
+        "Bi-Annually": "Bi-Annually",
+        "Annually": "Annually",
+        "Save": "Save"
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -192,6 +238,20 @@ Strings[internal] = {
         "Invalid backup selected": "Ongeldige back-up geselecteerd",
         "Close": "Sluiten",
         "Yes": "Ja",
-        "No": "Nee"
+        "No": "Nee",
+        "Okay": "Okay",
+        "Cost": "Kosten",
+        "Start Date": "Vanaf",
+        "End Date": "t/m",
+        "Recurrence": "Herhaling",
+        "Never": "Nooit",
+        "Monthly": "Maandelijks",
+        "Bi-Monthly": "Tweemaandelijks",
+        "Quarterly": "Per kwartaal",
+        "Bi-Annually": "Tweejaarlijks",
+        "Annually": "Jaarlijks",
+        "Save": "Opslaan"
     },
 }
+
+export { Strings, ITranslate };

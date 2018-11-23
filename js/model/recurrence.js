@@ -1,6 +1,6 @@
 "use strict";
 
-export default class Recurrence {
+class Recurrence {
     static get never() { return 0; }
     static get monthly() { return 1; }
     static get bimonthly() { return 2; }
@@ -8,3 +8,5 @@ export default class Recurrence {
     static get biannually() { return 4; }
     static get annually() { return 5; }
 }
+
+export { Recurrence };

@@ -1,8 +1,8 @@
 "use strict";
 
-import Guid from "./utils/guid.js";
-import Payment from "./model/payment.js";
-import Template from "./model/template.js";
+import { Guid } from "./utils/guid.js";
+import { Payment } from "./model/payment.js";
+import { Template } from "./model/template.js";
 
 const internal = Symbol("internal");
 
@@ -18,7 +18,7 @@ const templateProxy = {
     }
 };
 
-export default class MoneyStorage {
+class MoneyStorage {
     /**
      *
      *
@@ -267,3 +267,5 @@ export default class MoneyStorage {
         }
     }
 }
+
+export { MoneyStorage };

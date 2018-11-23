@@ -1,6 +1,7 @@
 "use strict";
 
-import PaymentEngine from './engine.js';
+import { PaymentEngine } from './engine.js';
+import { elementTemplate, DialogManager } from './dialogs.js';
 
 HTMLElement.prototype.clearChildren = function() {
     while(this.firstChild) {
@@ -23,118 +24,11 @@ Date.prototype.toMonthString = function () {
  */
 let engine = {};
 
-const dialogs = {
-    /**
-     * @param {String} message
-     * @returns {Promise<void>}
-     */
-    alert: async (message) => {
-        return new Promise(resolve => {
-            let dialog = document.createElement('dialog'),
-                text = document.createElement('p'),
-                button = document.createElement('button');
-
-            text.textContent = message;
-            button.textContent = engine.translate('Close');
-            button.addEventListener('click', () => {
-                resolve();
-                dialog.removeAttribute('open');
-                document.body.removeChild(dialog);
-            })
-
-            dialog.appendChild(text);
-            dialog.appendChild(button);
-            document.body.appendChild(dialog);
-            dialog.setAttribute('open', '');
-        });
-    },
-
-    /**
-     * @param {String} message
-     * @param {String} [type=text] Input type.
-     * @returns {Promise<String>}
-     */
-    prompt: async(message, type="text") => {
-        return new Promise(resolve => {
-            let dialog = document.createElement('dialog'),
-                form = document.createElement('form'),
-                text = document.createElement('p'),
-                input = document.createElement('input'),
-                button = document.createElement('input'),
-                cancel = document.createElement('input');
-
-            text.textContent = message;
-
-            input.type = type;
-            input.autocomplete = "no";
-
-            button.value = engine.translate('OK');
-            button.type = "submit";
-
-            cancel.value = engine.translate('Cancel');
-            cancel.type = "reset";
-
-            form.addEventListener('submit', e => {
-                e.preventDefault();
-                resolve(input.value);
-                dialog.removeAttribute('open');
-                document.body.removeChild(dialog);
-            });
-
-            form.addEventListener('reset', e => {
-                e.preventDefault();
-                resolve(null);
-                dialog.removeAttribute('open');
-                document.body.removeChild(dialog);
-            })
-
-            form.appendChild(input);
-            form.appendChild(document.createElement('br'));
-            form.appendChild(button);
-            form.appendChild(cancel);
-
-            dialog.appendChild(form);
-            document.body.appendChild(dialog);
-            dialog.setAttribute('open', '');
-        });
-    },
-
-    /**
-     * @param {String} message
-     * @returns {Promise<boolean>}
-     */
-    confirm: async(message) => {
-        return new Promise(resolve => {
-            let dialog = document.createElement('dialog'),
-                text = document.createElement('p'),
-                accept = document.createElement('button'),
-                decline = document.createElement('button');
-
-            text.innerHTML = message;
-
-            accept.textContent = engine.translate('Yes');
-            accept.addEventListener('click', () => {
-                resolve(true);
-                dialog.removeAttribute('open');
-                document.body.removeChild(dialog);
-            });
-
-            decline.textContent = engine.translate('No');
-            decline.addEventListener('click', () => {
-                resolve(false);
-                dialog.removeAttribute('open');
-                document.body.removeChild(dialog);
-            })
-
-            dialog.appendChild(text);
-            dialog.appendChild(document.createElement('br'));
-            dialog.appendChild(accept);
-            dialog.appendChild(decline);
-            document.body.appendChild(dialog);
-            dialog.setAttribute('open', '');
-        });
-    }
-}
+/**
+ *
+ * @type {DialogManager}
+ */
+let dialogs = {};
 
 const handler = e => {
     document.getElementById('expected').value = e.caller.formatCurrency(e.caller.expected);
@@ -247,6 +141,8 @@ const translate = engine => document.querySelectorAll(".translate").forEach(e =>
 
 document.addEventListener("DOMContentLoaded", e => {
     engine = new PaymentEngine();
+    dialogs = new DialogManager(engine);
+
     engine.addEventListener('change', handler);
     handler({ caller: engine });
 
@@ -385,6 +281,72 @@ document.addEventListener("DOMContentLoaded", e => {
                     }
                     return;
             }
+        }
+    });
+
+    document.getElementById('schedule-bill').addEventListener('click', async e => {
+        let template = await new Promise(resolve => {
+            let dialog = elementTemplate({
+                node: "dialog",
+                children: [
+                    { node: "h3", text: engine.translate("Schedule Bill") },
+                    {
+                        node: "form",
+                        events: {
+                            'submit': e => {
+                                e.preventDefault();
+                                let children = Array.from(e.target.children);
+                                resolve({
+                                    name: children.find(i => i.name === "name").value,
+
+                                });
+                                e.target.closest('dialog').close();
+                                document.body.removeChild(e.target.closest('dialog'));
+                            },
+                            'reset': e => {
+                                e.preventDefault();
+                                resolve(null);
+                                e.target.closest('dialog').close();
+                                document.body.removeChild(e.target.closest('dialog'));
+                            }
+                        },
+                        children: [
+                            { node: "label", text: engine.translate("Name") },
+                            { node: "input", name: "name" },
+                            { node: "br" },
+                            { node: "label", text: engine.translate("Cost") },
+                            { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
+                            { node: "br" },
+                            { node: "label", text: engine.translate("Start Date") },
+                            { node: "input", name: "start", type: "month" },
+                            { node: "br" },
+                            { node: "label", text: engine.translate("End Date") },
+                            { node: "input", name: "end", type: "month" },
+                            { node: "br" },
+                            { node: "label", text: engine.translate("Recurrence") },
+                            {
+                                node: "select",
+                                name: "recurrency",
+                                children: engine.recurrencies.map(r => { return {
+                                    node: "option",
+                                    value: r.id,
+                                    text: r.name
+                                }})
+                            },
+                            { node: "br" },
+                            { node: "input", type: "submit", value: engine.translate('Save') },
+                            { node: "input", type: "reset", value: engine.translate('Cancel') }
+                        ]
+                    }
+                ]
+            })
+
+            document.body.appendChild(dialog);
+            dialog.showModal();
+        });
+
+        if (template !== null) {
+            console.log(template);
         }
     });
 

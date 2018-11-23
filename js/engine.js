@@ -3,22 +3,24 @@
 if (localStorage === undefined)
     throw new Error("Local Storage is not supported.");
 
-import Guid from "./utils/guid.js";
-import Template from "./model/template.js";
-import Payment from "./model/payment.js";
-import MoneyStorage from "./storage.js";
-import Strings from "./strings.js";
+import { Guid } from "./utils/guid.js";
+import { Template } from "./model/template.js";
+import { Payment } from "./model/payment.js";
+import { MoneyStorage } from "./storage.js";
+import { Strings, ITranslate } from "./strings.js";
+import { Recurrence } from "./model/recurrence.js";
 
 const exportable = crypto !== undefined && crypto.subtle !== undefined;
 const internal = Symbol("internal");
 const save = Symbol("save");
 
-export default class PaymentEngine {
-
+class PaymentEngine extends ITranslate {
     /**
      * Bind a payment engine to the current window.
      */
     constructor() {
+        super();
+
         this[internal] = {
             /**
              * @type {MoneyStorage}
@@ -265,11 +267,7 @@ export default class PaymentEngine {
     translate(string, ...placeholders) {
         let value = Strings.tryTranslate(this.locale, string);
 
-        for (let p = 0; p < placeholders.length; placeholders++) {
-            value = value.replace(new RegExp('\\{' + p + '\\}', 'gi'), placeholders[p]);
-        }
-
-        return value;
+        return super.translate(value, ...placeholders);
     }
 
     /**
@@ -318,6 +316,17 @@ export default class PaymentEngine {
 
     get locales() {
         return Strings.locales;
+    }
+
+    get recurrencies() {
+        return [
+            { id: Recurrence.never, name: this.translate("Never") },
+            { id: Recurrence.monthly, name: this.translate("Monthly") },
+            { id: Recurrence.bimonthly, name: this.translate("Bi-Monthly") },
+            { id: Recurrence.quarterly, name: this.translate("Quarterly") },
+            { id: Recurrence.biannually, name: this.translate("Bi-Annually") },
+            { id: Recurrence.annually, name: this.translate("Annually") },
+        ];
     }
 
     /**
@@ -379,3 +388,5 @@ export default class PaymentEngine {
         throw new Error("Not supported");
     }
 }
+
+export { PaymentEngine };

@@ -32,11 +32,10 @@ if (crypto !== undefined && typeof crypto.getRandomValues === 'function') {
     }
 }
 
-export default class Guid {
+class Guid {
     static get empty() {
         return new Guid("00000000-0000-0000-000000000000");
     }
-
 
     get value() {
         return this[internal];
@@ -62,3 +61,5 @@ export default class Guid {
         return this.value;
     }
 }
+
+export { Guid };

@@ -1,0 +1,183 @@
+"use strict";
+
+import { ITranslate } from "./strings.js";
+
+/**
+ * @typedef {Object} ElementTemplate
+ * @property {String} node
+ * @property {?String} text
+ * @property {?ElementTemplate[]} children
+ * @property {Object.<string, Function>} events
+ */
+
+/**
+ * @param {ElementTemplate} properties
+ * @returns {HTMLElement}
+ */
+const elementTemplate = (properties) => {
+    /**
+     * @param {HTMLElement} element
+     * @param {ElementTemplate} properties
+     */
+    let recursive = (element, properties) => {
+            if (properties.text !== undefined){
+                element.textContent = properties.text;
+            }
+
+            if (properties.children !== undefined) {
+                properties.children.filter(child => child.node !== undefined)
+                    .forEach(child => element.appendChild(recursive(document.createElement(child.node), child)));
+            }
+
+            if (properties.events  !== undefined) {
+                Object.keys(properties.events).forEach(event => element.addEventListener(event, properties.events[event]));
+            }
+
+            Object.keys(properties).forEach(property => {
+                switch (property){
+                    case "children":
+                    case "text":
+                    case "node":
+                    case "events":
+                        break;
+                    default:element.setAttribute(property, properties[property]);
+                }
+            });
+
+            return element;
+        };
+
+    if (properties.node !== undefined) {
+        return recursive(document.createElement(properties.node), properties);
+    }
+}
+
+const translate = Symbol('translator');
+
+class DialogManager {
+    /**
+     * @param {ITranslate} translator
+     */
+    constructor(translator) {
+        if (translator instanceof ITranslate) {
+            this[translate] = translator;
+        } else {
+            throw new TypeError("translator does not implement ITranslate");
+        }
+    }
+
+    /**
+     * @param {String} message
+     * @returns {Promise<void>}
+     */
+    async alert(message) {
+        return new Promise(resolve => {
+            let dialog = elementTemplate({
+                node: "dialog",
+                children: [
+                    { node: "p", text: message },
+                    {
+                        node: "button",
+                        text: this[translate].translate('Close'),
+                        events: {
+                            'click': e => {
+                                resolve();
+                                e.target.closest('dialog').close();
+                                document.body.removeChild(e.target.closest('dialog'));
+                            }
+                        }
+                    }
+                ]
+            });
+
+            document.body.appendChild(dialog);
+            dialog.showModal();
+        });
+    };
+
+    /**
+     * @param {String} message
+     * @param {String} [type=text] Input type.
+     * @returns {Promise<String>}
+     */
+    async prompt(message, type="text") {
+        return new Promise(resolve => {
+            let dialog = elementTemplate({
+                node: "dialog",
+                role: "prompt",
+                children: [
+                    {
+                        node: "form",
+                        events: {
+                            'submit': e => {
+                                e.preventDefault();
+                                resolve(Array.from(e.target.children).find(i => i.name === "value").value);
+                                e.target.closest('dialog').close();
+                                document.body.removeChild(e.target.closest('dialog'));
+                            },
+                            'reset': e => {
+                                e.preventDefault();
+                                resolve(null);
+                                e.target.closest('dialog').close();
+                                document.body.removeChild(e.target.closest('dialog'));
+                            }
+                        },
+                        children: [
+                            { node: "label", text: message },
+                            { node: "input", type: type, name: "value" },
+                            { node: "br" },
+                            { node: "input", type: "submit", value: this[translate].translate('Okay') },
+                            { node: "input", type: "reset", value: this[translate].translate('Cancel') }
+                        ]
+                    }
+                ]
+            })
+
+            document.body.appendChild(dialog);
+            dialog.showModal();
+        });
+    };
+
+    /**
+     * @param {String} message
+     * @returns {Promise<boolean>}
+     */
+    async confirm(message) {
+        return new Promise(resolve => {
+            let dialog = elementTemplate({
+                node: "dialog",
+                role: "confirm",
+                children: [
+                    { node: "p", text: message },
+                    {
+                        node: "button",
+                        text: this[translate].translate('Yes'),
+                        events: {
+                            "click": e => {
+                                resolve(true);
+                                e.target.closest('dialog').removeAttribute('open');
+                                document.body.removeChild(e.target.closest('dialog'));
+                            }
+                        }
+                    },
+                    {
+                        node: "button",
+                        text: this[translate].translate('No'),
+                        events: {
+                            "click": e => {
+                                resolve(false);
+                                e.target.closest('dialog').removeAttribute('open');
+                                document.body.removeChild(e.target.closest('dialog'));
+                            }
+                        }
+                    }
+                ]
+            });
+
+            document.body.appendChild(dialog);
+            dialog.setAttribute('open', '');
+        });
+    }
+}
+
+export { elementTemplate, DialogManager };

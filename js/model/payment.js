@@ -1,11 +1,11 @@
 "use strict";
 
-import Guid from "../utils/guid.js";
-import Template from "./template.js";
+import { Guid } from "../utils/guid.js";
+import { Template } from "./template.js";
 
 const internal = Symbol("internal");
 
-export default class Payment {
+class Payment {
     /**
      * Create a new Payment based on provided parameters.
      *
@@ -179,3 +179,5 @@ export default class Payment {
         }
     }
 }
+
+export { Payment };

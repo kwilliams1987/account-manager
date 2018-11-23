@@ -1,12 +1,12 @@
 "use strict";
 
-import Guid from "../utils/guid.js";
-import Recurrence from "./recurrence.js";
-import Payment from "./payment.js";
+import { Guid } from "../utils/guid.js";
+import { Recurrence } from "./recurrence.js";
+import { Payment } from "./payment.js";
 
 const internal = Symbol("internal");
 
-export default class Template {
+class Template {
     constructor(values) {
         this[internal] = {
             id: new Guid(),
@@ -259,3 +259,5 @@ export default class Template {
         }
     }
 }
+
+export { Template };
