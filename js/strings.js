@@ -85,7 +85,10 @@ Strings[internal] = {
         "Restoring a backup will overwrite your existing data, continue?": "Restoring a backup will overwrite your existing data, continue?",
         "Backup password:": "Backup password:",
         "Invalid backup password": "Invalid backup password",
-        "Invalid backup selected": "Invalid backup selected"
+        "Invalid backup selected": "Invalid backup selected",
+        "Close": "Close",
+        "Yes": "Yes",
+        "No": "No"
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -134,7 +137,10 @@ Strings[internal] = {
         "Restoring a backup will overwrite your existing data, continue?": "Restoring a backup will overwrite your existing data, continue?",
         "Backup password:": "Backup password:",
         "Invalid backup password": "Invalid backup password",
-        "Invalid backup selected": "Invalid backup selected"
+        "Invalid backup selected": "Invalid backup selected",
+        "Close": "Close",
+        "Yes": "Yes",
+        "No": "No"
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -183,6 +189,9 @@ Strings[internal] = {
         "Restoring a backup will overwrite your existing data, continue?": "Als u een back-up herstelt, worden uw bestaande gegevens overschreven, gaat u verder?",
         "Backup password:": "Backup wachtwoord:",
         "Invalid backup password": "De back-up wachtwoord klopt niet",
-        "Invalid backup selected": "Ongeldige back-up geselecteerd"
+        "Invalid backup selected": "Ongeldige back-up geselecteerd",
+        "Close": "Sluiten",
+        "Yes": "Ja",
+        "No": "Nee"
     },
 }

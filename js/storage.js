@@ -29,7 +29,8 @@ export default class MoneyStorage {
             payments: [],
             templates: [],
             locale: "en-GB",
-            currency: "EUR"
+            currency: "EUR",
+            date: new Date()
         };
 
         if (storage === undefined) {
@@ -42,6 +43,16 @@ export default class MoneyStorage {
             }
 
             storage = JSON.parse(storage);
+        }
+
+        if (typeof(storage.date) === "string") {
+            try {
+                storage.date = new Date(storage.date);
+            } catch { }
+        }
+
+        if (storage.date instanceof Date) {
+            this[internal].date = storage.date;
         }
 
         if (storage.payments !== undefined && Array.isArray(storage.payments)) {
@@ -58,6 +69,18 @@ export default class MoneyStorage {
 
         if (typeof(storage.currency) === "string" && storage.currency.length === 3) {
             this[internal].currency = storage.currency;
+        }
+    }
+
+    get date() {
+        return this[internal].date;
+    }
+
+    set date(value) {
+        if (value instanceof Date) {
+            this[internal].date = value;
+        } else {
+            throw new TypeError("value must be a Date");
         }
     }
 
@@ -236,6 +259,7 @@ export default class MoneyStorage {
 
     toJSON() {
         return {
+            date: this.date,
             payments: this.payments,
             templates: this.templates,
             locale: this.locale,

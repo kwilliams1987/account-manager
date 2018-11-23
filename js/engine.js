@@ -24,7 +24,6 @@ export default class PaymentEngine {
              * @type {MoneyStorage}
              */
             storage: {},
-            month: new Date(),
             expected: 0,
             paid: 0,
             remaining: 0,
@@ -84,13 +83,13 @@ export default class PaymentEngine {
      * @returns {Date}
      */
     get month() {
-        return this[internal].month;
+        return this[internal].storage.date;
     }
 
     set month(value) {
-        if (typeof value === Date) {
-            if (value != this[internal].month) {
-                this[internal].month = value;
+        if (value instanceof Date) {
+            if (value != this[internal].storage.date) {
+                this[internal].storage.date = value;
 
 
                 this[internal].expected = 0;

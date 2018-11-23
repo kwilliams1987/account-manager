@@ -18,24 +18,82 @@ Date.prototype.toMonthString = function () {
     return result;
 }
 
+/**
+ * @type {PaymentEngine}
+ */
+let engine = {};
+
 const dialogs = {
     /**
      * @param {String} message
      * @returns {Promise<void>}
      */
-    alert: async(message) => {
-        return new Promise(() => {
-            window.alert(message);
+    alert: async (message) => {
+        return new Promise(resolve => {
+            let dialog = document.createElement('dialog'),
+                text = document.createElement('p'),
+                button = document.createElement('button');
+
+            text.textContent = message;
+            button.textContent = engine.translate('Close');
+            button.addEventListener('click', () => {
+                resolve();
+                dialog.removeAttribute('open');
+                document.body.removeChild(dialog);
+            })
+
+            dialog.appendChild(text);
+            dialog.appendChild(button);
+            document.body.appendChild(dialog);
+            dialog.setAttribute('open', '');
         });
     },
 
     /**
      * @param {String} message
+     * @param {String} [type=text] Input type.
      * @returns {Promise<String>}
      */
-    prompt: async(message) => {
+    prompt: async(message, type="text") => {
         return new Promise(resolve => {
-            resolve(window.prompt(message));
+            let dialog = document.createElement('dialog'),
+                form = document.createElement('form'),
+                text = document.createElement('p'),
+                input = document.createElement('input'),
+                button = document.createElement('input'),
+                cancel = document.createElement('input');
+
+            text.textContent = message;
+            input.type = type;
+
+            button.value = engine.translate('OK');
+            button.type = "submit";
+
+            cancel.value = engine.translate('Cancel');
+            cancel.type = "reset";
+
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                resolve(input.value);
+                dialog.removeAttribute('open');
+                document.body.removeChild(dialog);
+            });
+
+            form.addEventListener('reset', e => {
+                e.preventDefault();
+                resolve(null);
+                dialog.removeAttribute('open');
+                document.body.removeChild(dialog);
+            })
+
+            form.appendChild(input);
+            form.appendChild(document.createElement('br'));
+            form.appendChild(button);
+            form.appendChild(cancel);
+
+            dialog.appendChild(form);
+            document.body.appendChild(dialog);
+            dialog.setAttribute('open', '');
         });
     },
 
@@ -45,7 +103,33 @@ const dialogs = {
      */
     confirm: async(message) => {
         return new Promise(resolve => {
-            resolve(window.confirm(message));
+            let dialog = document.createElement('dialog'),
+                text = document.createElement('p'),
+                accept = document.createElement('button'),
+                decline = document.createElement('button');
+
+            text.innerHTML = message;
+
+            accept.textContent = engine.translate('Yes');
+            accept.addEventListener('click', () => {
+                resolve(true);
+                dialog.removeAttribute('open');
+                document.body.removeChild(dialog);
+            });
+
+            decline.textContent = engine.translate('No');
+            decline.addEventListener('click', () => {
+                resolve(false);
+                dialog.removeAttribute('open');
+                document.body.removeChild(dialog);
+            })
+
+            dialog.appendChild(text);
+            dialog.appendChild(document.createElement('br'));
+            dialog.appendChild(accept);
+            dialog.appendChild(decline);
+            document.body.appendChild(dialog);
+            dialog.setAttribute('open', '');
         });
     }
 }
@@ -160,14 +244,12 @@ const translate = engine => document.querySelectorAll(".translate").forEach(e =>
 });
 
 document.addEventListener("DOMContentLoaded", e => {
-    let engine = new PaymentEngine();
+    engine = new PaymentEngine();
     engine.addEventListener('change', handler);
     handler({ caller: engine });
 
     document.getElementById('month').value = engine.month.toMonthString();
-    document.getElementById('month').addEventListener('change', e => {
-        engine.month = e.target.value;
-    });
+    document.getElementById('month').addEventListener('change', e => engine.month = new Date(e.target.value + "-01"));
 
     let locales = document.getElementById("locale");
     let currencies = document.getElementById("currency");
@@ -192,7 +274,7 @@ document.addEventListener("DOMContentLoaded", e => {
         e.preventDefault();
 
         try {
-            let password = await dialogs.prompt(engine.translate("Please provide a password:"));
+            let password = await dialogs.prompt(engine.translate("Please provide a password:"), "password");
 
             if (password === null) {
                 return;
@@ -225,6 +307,7 @@ document.addEventListener("DOMContentLoaded", e => {
              * @type FileList
              */
             let files = change.target.files;
+
             if (files.length === 1) {
                 let reader = new FileReader();
                 reader.onload = async read => {
@@ -236,7 +319,10 @@ document.addEventListener("DOMContentLoaded", e => {
                             throw new Error(engine.translate("Invalid backup selected"));
                         }
 
-                        let password = await dialogs.prompt(engine.translate("Backup password:"));
+                        let password = await dialogs.prompt(engine.translate("Backup password:"), "password");
+                        if (password === null)
+                            return;
+
                         try {
                             await engine.import(password, result);
                         } catch (e) {
@@ -278,7 +364,7 @@ document.addEventListener("DOMContentLoaded", e => {
                     let template = engine.templates.find(t => t.id === templateId);
 
                     if (e.target.classList.contains("pay")) {
-                        let amount = await dialogs.prompt(template.amount > 0 ? engine.translate("Total cost:") : engine.translate("Total received:"));
+                        let amount = await dialogs.prompt(template.amount > 0 ? engine.translate("Total cost:") : engine.translate("Total received:"), "number");
                         amount = parseFloat(amount);
 
                         if (template.amount < 0) {
