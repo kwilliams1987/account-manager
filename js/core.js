@@ -64,7 +64,9 @@ const dialogs = {
                 cancel = document.createElement('input');
 
             text.textContent = message;
+
             input.type = type;
+            input.autocomplete = "no";
 
             button.value = engine.translate('OK');
             button.type = "submit";
