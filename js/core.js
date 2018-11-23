@@ -18,6 +18,38 @@ Date.prototype.toMonthString = function () {
     return result;
 }
 
+const dialogs = {
+    /**
+     * @param {String} message
+     * @returns {Promise<void>}
+     */
+    alert: async(message) => {
+        return new Promise(() => {
+            window.alert(message);
+        });
+    },
+
+    /**
+     * @param {String} message
+     * @returns {Promise<String>}
+     */
+    prompt: async(message) => {
+        return new Promise(resolve => {
+            resolve(window.prompt(message));
+        });
+    },
+
+    /**
+     * @param {String} message
+     * @returns {Promise<boolean>}
+     */
+    confirm: async(message) => {
+        return new Promise(resolve => {
+            resolve(window.confirm(message));
+        });
+    }
+}
+
 const handler = e => {
     document.getElementById('expected').value = e.caller.formatCurrency(e.caller.expected);
     document.getElementById('paid').value = e.caller.formatCurrency(e.caller.paid);
@@ -142,10 +174,10 @@ document.addEventListener("DOMContentLoaded", e => {
 
     engine.locales.forEach(e => locales.appendChild(new Option(e.name, e.locale)));
     locales.value = engine.locale;
-    locales.addEventListener("change", e => {
+    locales.addEventListener("change", async e => {
         engine.locale = e.target.value;
         let defaultCurrency = engine.defaultCurrency;
-        if (defaultCurrency.code !== currencies.value && confirm(engine.translate("Switch to local currency {0}?", defaultCurrency.name))) {
+        if (defaultCurrency.code !== currencies.value && await dialogs.confirm(engine.translate("Switch to local currency {0}?", defaultCurrency.name))) {
             engine.currency = defaultCurrency.code;
         }
     });
@@ -155,61 +187,118 @@ document.addEventListener("DOMContentLoaded", e => {
     currencies.addEventListener("change", e => engine.currency = e.target.value);
 
     translate(engine);
-    document.querySelector('body').classList.add("loaded");
 
-    document.getElementById('export').addEventListener('click', e => {
+    document.getElementById('export').addEventListener('click', async e => {
         e.preventDefault();
 
-        let password = prompt(engine.translate("Please provide a password:"));
+        try {
+            let password = await dialogs.prompt(engine.translate("Please provide a password:"));
 
-        engine.export(password).then(r => {
-            let a = document.createElement('a'), date = Date.now();
-            a.setAttribute('href', "data:text/plain;charset=utf-8," + encodeURIComponent(r));
-            a.setAttribute('download', 'export-' + date.getFullYear() + "-" + (date.getMonth < 9 ? "0" : "") + "-" + (date.getMonth() + 1) + date.getDate() + ".txt");
+            if (password === null) {
+                return;
+            }
+
+            let encrypted = await engine.export(password),
+                date = new Date(Date.now()),
+                a = document.createElement('a');
+
+            a.setAttribute('href', "data:text/plain;charset=utf-8," + encodeURIComponent(encrypted));
+            a.setAttribute('download', 'export-' + date.getFullYear() + "-" + (date.getMonth() < 9 ? "0" : "") + (date.getMonth() + 1) + "-" + date.getDate() + ".bak");
             a.setAttribute('hidden', '');
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        }).catch(e => {
-            alert(engine.translate("Export failed: {0}.", e));
-        });
-    })
+        } catch(e) {
+            await dialogs.alert(engine.translate("Export failed: {0}.", e.message));
+        }
+    });
 
-    document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click', e => {
-        if (e.target instanceof HTMLElement) {
-            if (e.target.nodeName === 'TBODY') {
-                return;
+    document.getElementById('import').addEventListener('click', async e => {
+        if (await dialogs.confirm(engine.translate("Restoring a backup will overwrite your existing data, continue?"))) {
+            document.getElementById('backup').click();
+        }
+    });
+
+    document.getElementById('backup').addEventListener('change', async change => {
+        try {
+            /**
+             * @type FileList
+             */
+            let files = change.target.files;
+            if (files.length === 1) {
+                let reader = new FileReader();
+                reader.onload = async read => {
+                    change.target.value = "";
+                    try {
+                        let result = JSON.parse(read.target.result);
+
+                        if (result.cypherText === undefined || result.iv === undefined) {
+                            throw new Error(engine.translate("Invalid backup selected"));
+                        }
+
+                        let password = await dialogs.prompt(engine.translate("Backup password:"));
+                        try {
+                            await engine.import(password, result);
+                        } catch (e) {
+                            if (e.name === "OperationError") {
+                                await dialogs.alert(engine.translate("Import failed: {0}.", engine.translate("Invalid backup password")));
+                            } else {
+                                await dialogs.alert(engine.translate("Import failed: {0}.", e.message));
+                            }
+                        }
+                    } catch (e) {
+                        if (e instanceof SyntaxError) {
+                            throw new Error(engine.translate("Invalid backup selected"));
+                        } else {
+                            throw e;
+                        }
+                    }
+                };
+
+                reader.onerror = read => {
+                    read.target.abort();
+                    change.target.value = "";
+                    throw read.error;
+                };
+
+                reader.readAsText(files.item(0));
             }
+        } catch (error) {
+            dialogs.alert(engine.translate("Import failed: {0}.", error.message));
+        }
+    });
 
-            if (e.target.nodeName === "BUTTON") {
-                e.preventDefault();
+    document.querySelector('main tbody').addEventListener('click', async e => {
+        if (e.target instanceof HTMLElement) {
+            switch (e.target.nodeName) {
+                case "BUTTON":
+                    e.preventDefault();
 
-                let templateId = e.target.closest("tr").dataset.templateId;
-                let template = engine.templates.find(t => t.id === templateId);
+                    let templateId = e.target.closest("tr").dataset.templateId;
+                    let template = engine.templates.find(t => t.id === templateId);
 
-                if (e.target.classList.contains("pay")) {
-                    let amount = parseFloat(prompt(template.amount > 0 ? engine.translate("Total cost:") : engine.translate("Total received:")));
+                    if (e.target.classList.contains("pay")) {
+                        let amount = await dialogs.prompt(template.amount > 0 ? engine.translate("Total cost:") : engine.translate("Total received:"));
+                        amount = parseFloat(amount);
 
-                    if (template.amount < 0) {
-                        amount *= -1;
+                        if (template.amount < 0) {
+                            amount *= -1;
+                        }
+
+                        if (template.partial && await dialogs.confirm(engine.translate("Close the {0} bill?", template.name))) {
+                            engine.addPayment(templateId, amount, final);
+                        } else {
+                            engine.addPayment(templateId, amount);
+                        }
                     }
 
-                    let final = false;
-                    if (template.partial) {
-                        final = confirm(engine.translate("Close the {0} bill?", template.name));
-                    }
-
-                    engine.addPayment(templateId, amount, final);
-                }
-
-                if (e.target.classList.contains("ignore")) {
-                    if (confirm(engine.translate("Ignore {0} for this cycle?", template.name))) {
+                    if (e.target.classList.contains("ignore") && await dialogs.confirm(engine.translate("Ignore {0} for this cycle?", template.name))) {
                         engine.addPayment(templateId, 0, true);
                     }
-                }
+                    return;
             }
         }
-    }));
+    });
 
     document.querySelectorAll("#tab-picker a").forEach(e => e.addEventListener("click", e => {
         e.preventDefault();
@@ -228,4 +317,6 @@ document.addEventListener("DOMContentLoaded", e => {
     if (localStorage.eyeActiveTab !== undefined) {
         Array.from(document.querySelectorAll('#tab-picker a')).find(a => a.href.split('#')[1] === localStorage.eyeActiveTab).click();
     }
+
+    document.body.classList.remove("loading");
 });

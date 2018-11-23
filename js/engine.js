@@ -39,12 +39,12 @@ export default class PaymentEngine {
                         return;
                 }
             },
-            async generateKey(password) {
+            generateKey: async (password) => {
                 if (!exportable)
                     throw new Error(this.translate("Your browser doesn't support encryption"));
 
                 if (typeof password !== "string" || password.length < 6)
-                    throw new TypeError(engine.translate("Password must be at least {0} characters.", 6));
+                    throw new TypeError(this.translate("Password must be at least {0} characters.", 6));
 
                 var encoder = new TextEncoder();
                 var algo = {
@@ -63,7 +63,12 @@ export default class PaymentEngine {
             this[internal].trigger('change');
         }
 
-        this[internal].storage = new MoneyStorage(localStorage.eyePaymentEngine);
+        try {
+            this[internal].storage = new MoneyStorage(localStorage.eyePaymentEngine);
+        } catch (e) {
+            this[internal].storage = new MoneyStorage();
+            localStorage.removeItem("eyePaymentEngine");
+        }
 
         window.addEventListener("storage", e => {
             if (e.key === "eyePaymentEngine") {
@@ -325,20 +330,18 @@ export default class PaymentEngine {
      * @throws {TypeError} if the password isn't a string or is too weak.
      */
     async export(password) {
-        return this[internal].generateKey(password).then(key => {
-            let encoder = new TextEncoder();
-            let algo = {
+        let key = await this[internal].generateKey(password),
+            encoder = new TextEncoder(),
+            algo = {
                 name: 'AES-GCM',
                 length: 256,
                 iv: crypto.getRandomValues(new Uint8Array(16))
-            };
+            },
+            result = await crypto.subtle.encrypt(algo, key, encoder.encode(JSON.stringify(this[internal].storage)));
 
-            return crypto.subtle.encrypt(algo, key, encoder.encode(this[internal].storage.toJSON())).then(result => {
-                return JSON.stringify({
-                    cypherText: result,
-                    iv: algo.iv
-                });
-            });
+        return JSON.stringify({
+            cypherText: btoa(String.fromCharCode(...new Uint8Array(result))),
+            iv: btoa(String.fromCharCode(...new Uint8Array(algo.iv)))
         });
     }
 
@@ -356,19 +359,21 @@ export default class PaymentEngine {
             encrypted = JSON.parse(encrypted);
         }
 
-        this[internal].generateKey(password).then(key => {
-            let algo = {
+        let key = await this[internal].generateKey(password),
+            algo = {
                 name: 'AES-GCM',
                 length: 256,
-                iv: encrypted.iv
-            };
+                iv: Uint8Array.from(atob(encrypted.iv), c => c.charCodeAt(0))
+            },
+            bytes = Uint8Array.from(atob(encrypted.cypherText), c => c.charCodeAt(0)),
+            source = await crypto.subtle.decrypt(algo, key, bytes),
+            result = new TextDecoder().decode(source);
 
-            crypto.subtle.decrypt(algo, key, encrypted.cypherText).then(source => {
-                let result = new TextDecoder().decode(source);
-                localStorage.eyePaymentEngine = result;
-                this[internal].storage = new MoneyStorage(result);
-            });
-        });
+        JSON.parse(result);
+
+        localStorage.eyePaymentEngine = result;
+        this[internal].storage = new MoneyStorage(result);
+        this[internal].trigger('change');
     }
 
     toJSON() {

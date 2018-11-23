@@ -32,7 +32,7 @@ export default class Strings {
             return Strings[internal][locale][string];
         } else {
             console.warn(`${locale} is missing a translation for "${string}".`);
-            return string;
+            return "$" + string;
         }
     }
 }
@@ -75,7 +75,17 @@ Strings[internal] = {
         "Schedule Bill": "Schedule Bill",
         "Schedule Income": "Schedule income",
         "Currency:": "Currency:",
-        "Switch to local currency {0}?": "Switch to local currency {0}?"
+        "Switch to local currency {0}?": "Switch to local currency {0}?",
+        "Create Backup": "Create Backup",
+        "Restore Backup": "Restore Backup",
+        "Please provide a password:": "Please provide a password:",
+        "Your browser doesn't support encryption": "Your browser doesn't support encryption",
+        "Export failed: {0}.": "Backup failed: {0}.",
+        "Import failed: {0}.": "Restore failed: {0}.",
+        "Restoring a backup will overwrite your existing data, continue?": "Restoring a backup will overwrite your existing data, continue?",
+        "Backup password:": "Backup password:",
+        "Invalid backup password": "Invalid backup password",
+        "Invalid backup selected": "Invalid backup selected"
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -114,7 +124,17 @@ Strings[internal] = {
         "Schedule Bill": "Schedule Bill",
         "Schedule Income": "Schedule income",
         "Currency:": "Currency:",
-        "Switch to local currency {0}?": "Switch to local currency {0}?"
+        "Switch to local currency {0}?": "Switch to local currency {0}?",
+        "Create Backup": "Create Backup",
+        "Restore Backup": "Restore Backup",
+        "Please provide a password:": "Please provide a password:",
+        "Your browser doesn't support encryption": "Your browser doesn't support encryption",
+        "Export failed: {0}.": "Backup failed: {0}.",
+        "Import failed: {0}.": "Restore failed: {0}.",
+        "Restoring a backup will overwrite your existing data, continue?": "Restoring a backup will overwrite your existing data, continue?",
+        "Backup password:": "Backup password:",
+        "Invalid backup password": "Invalid backup password",
+        "Invalid backup selected": "Invalid backup selected"
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -153,6 +173,16 @@ Strings[internal] = {
         "Schedule Bill": "Plan nieuwe betaling",
         "Schedule Income": "Plan nieuwe inkomsten",
         "Currency:": "Valuta:",
-        "Switch to local currency {0}?": "Overschakelen naar lokale valuta {0}?"
+        "Switch to local currency {0}?": "Overschakelen naar lokale valuta {0}?",
+        "Create Backup": "Back-up maken",
+        "Restore Backup": "Back-up terugzetten",
+        "Please provide a password:": "Kies een wachtwoord:",
+        "Your browser doesn't support encryption": "Uw browser ondersteund encryptie niet",
+        "Export failed: {0}.": "Back-up mislukt: {0}.",
+        "Import failed: {0}.": "Herstel mislukt: {0}.",
+        "Restoring a backup will overwrite your existing data, continue?": "Als u een back-up herstelt, worden uw bestaande gegevens overschreven, gaat u verder?",
+        "Backup password:": "Backup wachtwoord:",
+        "Invalid backup password": "De back-up wachtwoord klopt niet",
+        "Invalid backup selected": "Ongeldige back-up geselecteerd"
     },
 }
