@@ -11,6 +11,7 @@ class Template {
         this[internal] = {
             id: new Guid(),
             name: "",
+            benefactor: null,
             amount: 0,
             startDate: null,
             endDate: null,
@@ -22,14 +23,27 @@ class Template {
         if (values === undefined)
             return;
 
-        this[internal].id = new Guid(values.id);
+        if (values.id !== undefined) {
+            this[internal].id = new Guid(values.id);
+            this[internal].created = values.created;
+        }
+
+        if (values.startDate instanceof Date) {
+            this[internal].startDate = values.startDate;
+        } else if (values.startDate !== null) {
+            this[internal].startDate = new Date(values.startDate);
+        }
+
+        if (values.endDate instanceof Date) {
+            this[internal].endDate = values.endDate;
+        } else if (values.endDate !== null) {
+            this[internal].endDate = new Date(values.endDate);
+        }
+
         this[internal].name = values.name;
-        this[internal].amount = values.amount;
-        this[internal].startDate = values.startDate;
-        this[internal].endDate = values.endDate;
+        this[internal].amount = parseFloat(values.amount);
         this[internal].partial = values.partial;
         this[internal].recurrence = values.recurrence;
-        this[internal].created = values.created;
     }
 
     /**
@@ -202,8 +216,29 @@ class Template {
      * @throws {TypeError} if month is not a Date
      */
     isDueInMonth(month){
+        month = new Date(month.getFullYear(), month.getMonth(), 1);
         if (month instanceof Date) {
+            switch (this.recurrence) {
+                case Recurrence.never:
+                    if (this.startDate === null)
+                        return false;
 
+                    return month.getFullYear() === this.startDate.getFullYear() && month.getMonth() === this.startDate.getMonth();
+                case Recurrence.monthly:
+                    if (this.startDate === null && this.endDate === null) {
+                        return true;
+                    }
+
+                    if (this.endDate === null) {
+                        return this.startDate <= month;
+                    }
+
+                    if (this.startDate === null) {
+                        return this.endDate >= month;
+                    }
+
+                    return this.startDate <= month && this.endDate >= month;
+            }
         } else {
             throw new TypeError("month is not a date");
         }

@@ -221,19 +221,25 @@ class MoneyStorage {
      */
     updateTemplate(template) {
         if (template instanceof Template){
-            for (let t = 0; t < this[internal].templates.length; t++) {
-                if (template.id === this[internal].templates[t].id) {
-                    this[internal].templates[t] = template;
-                    return;
-                }
+            /**
+             * @type {Template}
+             */
+            var current = this[internal].templates.find(t => t.id === template.id);
+            if (current === undefined) {
+                this[internal].templates.push(template);
+            } else {
+                current.amount = template.amount;
+                current.benefactor = template.benefactor;
+                current.endDate = template.endDate;
+                current.name = template.name;
+                current.partial = template.partial;
+                current.recurrence = template.recurrence;
+                current.startDate = template.startDate;
             }
-
-            this[internal].templates.push(template);
         } else {
             throw new TypeError("template is not the correct type.");
         }
     }
-
 
     /**
      * Removes template from the dataset if it exists.
@@ -246,6 +252,12 @@ class MoneyStorage {
         }
 
         if (template instanceof Guid) {
+            for (let p = 0; p < this[internal].payments.length; p++) {
+                if (template === this[internal].payments[p].templateId) {
+                    this[internal].payments.splice(p, 1);
+                }
+            }
+
             for (let t = 0; t < this[internal].templates.length; t++) {
                 if (template === this[internal].templates[t].id) {
                     this[internal].templates.splice(t, 1);

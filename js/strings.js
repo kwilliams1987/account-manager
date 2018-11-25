@@ -10,7 +10,7 @@ class ITranslate {
      * @param {...String} placeholders
      */
     translate(string, ...placeholders) {
-        placeholders.forEach(p => string = string.replace(new RegExp('\\{' + p + '\\}', 'gi'), placeholders[p]));
+        placeholders.forEach((value, index) => string = string.replace(new RegExp('\\{' + index + '\\}', 'gi'), value));
         return string;
     }
 
@@ -122,7 +122,9 @@ Strings[internal] = {
         "Quarterly": "Quarterly",
         "Bi-Annually": "Bi-Annually",
         "Annually": "Annually",
-        "Save": "Save"
+        "Save": "Save",
+        "Edit": "Edit",
+        "Partial Payments": "Partial Payments"
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -186,7 +188,9 @@ Strings[internal] = {
         "Quarterly": "Quarterly",
         "Bi-Annually": "Bi-Annually",
         "Annually": "Annually",
-        "Save": "Save"
+        "Save": "Save",
+        "Edit": "Edit",
+        "Partial Payments": "Partial Payments"
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -250,7 +254,9 @@ Strings[internal] = {
         "Quarterly": "Per kwartaal",
         "Bi-Annually": "Tweejaarlijks",
         "Annually": "Jaarlijks",
-        "Save": "Opslaan"
+        "Save": "Opslaan",
+        "Edit": "Bewerken",
+        "Partial Payments": "In delen betaalen"
     },
 }
 

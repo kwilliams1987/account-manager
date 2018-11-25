@@ -2,6 +2,8 @@
 
 import { PaymentEngine } from './engine.js';
 import { elementTemplate, DialogManager } from './dialogs.js';
+import { Template } from './model/template.js';
+import { Recurrence } from './model/recurrence.js';
 
 HTMLElement.prototype.clearChildren = function() {
     while(this.firstChild) {
@@ -78,6 +80,8 @@ const handler = e => {
                 if (excessive) {
                     row.content.firstChild.classList.add("excessive");
                 }
+
+                row.content.firstChild.dataset.entity = t;
                 paid.appendChild(row.content.firstChild);
             } else {
                 let remaining = Math.max(0, t.amount - cost);
@@ -90,12 +94,15 @@ const handler = e => {
                     <td>
                         <button class="pay">${e.caller.translate("Pay")}</button>
                         <button class="ignore">${e.caller.translate("Ignore")}</button>
+                        <button class="edit">${e.caller.translate("Edit")}</button>
                     </td>
                 </tr>`.trim();
 
                 if (excessive) {
                     row.content.firstChild.classList.add("excessive");
                 }
+
+                row.content.firstChild.dataset.entity = t;
                 pending.appendChild(row.content.firstChild);
             }
         } else {
@@ -113,6 +120,8 @@ const handler = e => {
             if (excessive) {
                 row.content.firstChild.classList.add("excessive");
             }
+
+            row.content.firstChild.dataset.entity = t;
             income.appendChild(row.content.firstChild);
         }
     });
@@ -157,7 +166,7 @@ document.addEventListener("DOMContentLoaded", e => {
     locales.addEventListener("change", async e => {
         engine.locale = e.target.value;
         let defaultCurrency = engine.defaultCurrency;
-        if (defaultCurrency.code !== currencies.value && await dialogs.confirm(engine.translate("Switch to local currency {0}?", defaultCurrency.name))) {
+        if (defaultCurrency.code !== currencies.value && await dialogs.confirm("Switch to local currency {0}?", defaultCurrency.name)) {
             engine.currency = defaultCurrency.code;
         }
     });
@@ -172,7 +181,7 @@ document.addEventListener("DOMContentLoaded", e => {
         e.preventDefault();
 
         try {
-            let password = await dialogs.prompt(engine.translate("Please provide a password:"), "password");
+            let password = await dialogs.prompt({ text: "Please provide a password:", type: "password"});
 
             if (password === null) {
                 return;
@@ -189,12 +198,12 @@ document.addEventListener("DOMContentLoaded", e => {
             a.click();
             document.body.removeChild(a);
         } catch(e) {
-            await dialogs.alert(engine.translate("Export failed: {0}.", e.message));
+            await dialogs.alert("Export failed: {0}.", e.message);
         }
     });
 
     document.getElementById('import').addEventListener('click', async e => {
-        if (await dialogs.confirm(engine.translate("Restoring a backup will overwrite your existing data, continue?"))) {
+        if (await dialogs.confirm("Restoring a backup will overwrite your existing data, continue?")) {
             document.getElementById('backup').click();
         }
     });
@@ -217,7 +226,7 @@ document.addEventListener("DOMContentLoaded", e => {
                             throw new Error(engine.translate("Invalid backup selected"));
                         }
 
-                        let password = await dialogs.prompt(engine.translate("Backup password:"), "password");
+                        let password = await dialogs.prompt({ text: "Backup password:", type: "password" });
                         if (password === null)
                             return;
 
@@ -225,9 +234,9 @@ document.addEventListener("DOMContentLoaded", e => {
                             await engine.import(password, result);
                         } catch (e) {
                             if (e.name === "OperationError") {
-                                await dialogs.alert(engine.translate("Import failed: {0}.", engine.translate("Invalid backup password")));
+                                await dialogs.alert("Import failed: {0}.", engine.translate("Invalid backup password"));
                             } else {
-                                await dialogs.alert(engine.translate("Import failed: {0}.", e.message));
+                                await dialogs.alert("Import failed: {0}.", e.message);
                             }
                         }
                     } catch (e) {
@@ -248,7 +257,7 @@ document.addEventListener("DOMContentLoaded", e => {
                 reader.readAsText(files.item(0));
             }
         } catch (error) {
-            dialogs.alert(engine.translate("Import failed: {0}.", error.message));
+            dialogs.alert("Import failed: {0}.", error.message);
         }
     });
 
@@ -262,22 +271,142 @@ document.addEventListener("DOMContentLoaded", e => {
                     let template = engine.templates.find(t => t.id === templateId);
 
                     if (e.target.classList.contains("pay")) {
-                        let amount = await dialogs.prompt(template.amount > 0 ? engine.translate("Total cost:") : engine.translate("Total received:"), "number");
+                        let amount = await dialogs.prompt({ text: template.amount > 0 ? "Total cost:" : "Total received:", type: "number" });
                         amount = parseFloat(amount);
 
                         if (template.amount < 0) {
                             amount *= -1;
                         }
 
-                        if (template.partial && await dialogs.confirm(engine.translate("Close the {0} bill?", template.name))) {
+                        if (template.partial && await dialogs.confirm("Close the {0} bill?", template.name)) {
                             engine.addPayment(templateId, amount, final);
                         } else {
                             engine.addPayment(templateId, amount);
                         }
                     }
 
-                    if (e.target.classList.contains("ignore") && await dialogs.confirm(engine.translate("Ignore {0} for this cycle?", template.name))) {
+                    if (e.target.classList.contains("ignore") && await dialogs.confirm("Ignore {0} for this cycle?", template.name)) {
                         engine.addPayment(templateId, 0, true);
+                    }
+
+                    if (e.target.classList.contains("edit")) {
+                        let record = e.target.closest('tr').dataset.entity;
+                        /**
+                         * @type {Template}
+                         */
+                        let result = await new Promise(resolve => {
+                            let dialog = elementTemplate({
+                                node: "dialog",
+                                children: [
+                                    { node: "h3", text: engine.translate("Edit Schedule") },
+                                    {
+                                        node: "form",
+                                        events: {
+                                            'submit': async e => {
+                                                e.preventDefault();
+
+                                                /**
+                                                 * @type {HTMLElement[]}
+                                                 */
+                                                let children = Array.from(e.target.children);
+                                                let start = children.find(i => i.name === "start").value;
+                                                let end = children.find(i => i.name === "end").value;
+
+                                                let result = {
+                                                    id: record.id,
+                                                    created: record.created,
+                                                    name: children.find(i => i.name === "name").value,
+                                                    amount: parseFloat(children.find(i => i.name === "cost").value),
+                                                    startDate: start === "" ? null : new Date(start + "-01"),
+                                                    endDate: end === "" ? null : new Date(end + "-01"),
+                                                    recurrence: parseInt(children.find(i => i.name === "recurrency").value),
+                                                    partial: children.find(i => i.name === "partial").checked
+                                                };
+
+                                                if (result.name + "" === "") {
+                                                    await dialogs.alert("Please provide a {0}.", engine.translate("Name"));
+                                                    return;
+                                                }
+
+                                                if (isNaN(result.amount) || result.amount === 0.0) {
+                                                    await dialogs.alert("Please provide a {0}.", engine.translate("Cost"));
+                                                    return;
+                                                }
+
+                                                if (result.startDate !== null && result.endDate !== null && result.startDate > result.endDate) {
+                                                    await dialogs.alert("Date range is invalid.");
+                                                    return;
+                                                }
+
+                                                if (result.start === null && result.recurrence !== Recurrence.never && result.recurrence !== Recurrence.monthly) {
+                                                    await dialogs.alert("Cannot use this recurrency without a start date.");
+                                                    return;
+                                                }
+
+                                                resolve(new Template(result));
+                                                e.target.closest('dialog').close();
+                                                document.body.removeChild(e.target.closest('dialog'));
+                                            },
+                                            'reset': e => {
+                                                e.preventDefault();
+                                                resolve(null);
+                                                e.target.closest('dialog').close();
+                                                document.body.removeChild(e.target.closest('dialog'));
+                                            }
+                                        },
+                                        children: [
+                                            { node: "label", text: engine.translate("Name"), value: record.name },
+                                            { node: "input", name: "name" },
+                                            { node: "br" },
+                                            { node: "label", text: engine.translate("Cost") },
+                                            { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
+                                            { node: "br" },
+                                            { node: "label", text: engine.translate("Start Date") },
+                                            { node: "input", name: "start", type: "month" },
+                                            { node: "br" },
+                                            { node: "label", text: engine.translate("End Date") },
+                                            { node: "input", name: "end", type: "month" },
+                                            { node: "br" },
+                                            { node: "label", text: engine.translate("Recurrence") },
+                                            {
+                                                node: "select",
+                                                name: "recurrency",
+                                                children: engine.recurrencies.map(r => { return {
+                                                    node: "option",
+                                                    value: r.id,
+                                                    text: r.name
+                                                }})
+                                            },
+                                            { node: "br" },
+                                            { node: "label", text: engine.translate("Partial Payments") },
+                                            { node: "input", name: "partial", type: "checkbox" },
+                                            { node: "br" },
+                                            { node: "input", type: "submit", value: engine.translate('Save') },
+                                            { node: "input", type: "reset", value: engine.translate('Cancel') },
+                                            {
+                                                node: "button",
+                                                text: engine.translate("Delete"),
+                                                events: {
+                                                    click: async e => {
+                                                        if (await dialogs.confirm("Are you sure you want to delete {0} and all it's payment history?", record.name)) {
+                                                            engine.deleteTemplate(record);
+                                                            resolve(null);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            });
+
+                            document.body.append(dialog);
+                            dialog.showModal();
+                        });
+
+                        if (result instanceof Template) {
+                            engine.addOrUpdateTemplate(result);
+                        }
                     }
                     return;
             }
@@ -293,13 +422,45 @@ document.addEventListener("DOMContentLoaded", e => {
                     {
                         node: "form",
                         events: {
-                            'submit': e => {
+                            'submit': async e => {
                                 e.preventDefault();
-                                let children = Array.from(e.target.children);
-                                resolve({
-                                    name: children.find(i => i.name === "name").value,
 
-                                });
+                                /**
+                                 * @type {HTMLElement[]}
+                                 */
+                                let children = Array.from(e.target.children);
+                                let start = children.find(i => i.name === "start").value;
+                                let end = children.find(i => i.name === "end").value;
+
+                                let result = {
+                                    name: children.find(i => i.name === "name").value,
+                                    amount: parseFloat(children.find(i => i.name === "cost").value),
+                                    startDate: start === "" ? null : new Date(start + "-01"),
+                                    endDate: end === "" ? null : new Date(end + "-01"),
+                                    recurrence: parseInt(children.find(i => i.name === "recurrency").value),
+                                    partial: children.find(i => i.name === "partial").checked
+                                };
+
+                                if (result.name + "" === "") {
+                                    await dialogs.alert("Please provide a {0}.", engine.translate("Name"));
+                                    return;
+                                }
+
+                                if (isNaN(result.amount) || result.amount === 0.0) {
+                                    await dialogs.alert("Please provide a {0}.", engine.translate("Cost"));
+                                    return;
+                                }
+
+                                if (result.startDate !== null && result.endDate !== null && result.startDate > result.endDate) {
+                                    await dialogs.alert("Date range is invalid.");
+                                    return;
+                                }
+
+                                if (result.start === null && result.recurrence !== Recurrence.never && result.recurrence !== Recurrence.monthly) {
+                                    await dialogs.alert("Cannot use this recurrency without a start date.");
+                                }
+
+                                resolve(new Template(result));
                                 e.target.closest('dialog').close();
                                 document.body.removeChild(e.target.closest('dialog'));
                             },
@@ -334,19 +495,22 @@ document.addEventListener("DOMContentLoaded", e => {
                                 }})
                             },
                             { node: "br" },
+                            { node: "label", text: engine.translate("Partial Payments") },
+                            { node: "input", name: "partial", type: "checkbox" },
+                            { node: "br" },
                             { node: "input", type: "submit", value: engine.translate('Save') },
                             { node: "input", type: "reset", value: engine.translate('Cancel') }
                         ]
                     }
                 ]
-            })
+            });
 
             document.body.appendChild(dialog);
             dialog.showModal();
         });
 
-        if (template !== null) {
-            console.log(template);
+        if (template instanceof Template) {
+            engine.addOrUpdateTemplate(template);
         }
     });
 

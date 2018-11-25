@@ -67,15 +67,16 @@ class DialogManager {
     }
 
     /**
-     * @param {String} message
+     * @param {String} message Translatable message string.
+     * @param {...String} values Translation placeholder values.
      * @returns {Promise<void>}
      */
-    async alert(message) {
+    async alert(message, ...parameters) {
         return new Promise(resolve => {
             let dialog = elementTemplate({
                 node: "dialog",
                 children: [
-                    { node: "p", text: message },
+                    { node: "p", text: this[translate].translate(message, ...parameters) },
                     {
                         node: "button",
                         text: this[translate].translate('Close'),
@@ -96,11 +97,35 @@ class DialogManager {
     };
 
     /**
-     * @param {String} message
-     * @param {String} [type=text] Input type.
+     * @typedef {Object} PromptOptions
+     * @property {String} text
+     * @property {?String} type
+     * @property {?String[]} parameters
+     */
+
+    /**
+     * @param {(String|PromptOptions} message Translatable message string or advanced options.
+     * @param {...String} values Translation placeholder values, ignored with PromptOptions.
      * @returns {Promise<String>}
      */
-    async prompt(message, type="text") {
+    async prompt(message, ...parameters) {
+        let type = "text";
+        if (typeof message === "object") {
+            if (typeof message.text !== "string") {
+                throw Error("message isn't a valid PromptOptions object");
+            }
+
+            if (typeof message.type === "string") {
+                type = message.type;
+            }
+
+            if (Array.isArray(message.parameters)) {
+                parameters = message.parameters;
+            }
+
+            message = message.text;
+        }
+
         return new Promise(resolve => {
             let dialog = elementTemplate({
                 node: "dialog",
@@ -123,7 +148,7 @@ class DialogManager {
                             }
                         },
                         children: [
-                            { node: "label", text: message },
+                            { node: "label", text: this[translate].translate(message, ...parameters) },
                             { node: "input", type: type, name: "value" },
                             { node: "br" },
                             { node: "input", type: "submit", value: this[translate].translate('Okay') },
@@ -139,16 +164,17 @@ class DialogManager {
     };
 
     /**
-     * @param {String} message
+     * @param {String} message Translatable message string.
+     * @param {...String} values Translation placeholder values.
      * @returns {Promise<boolean>}
      */
-    async confirm(message) {
+    async confirm(message, ...values) {
         return new Promise(resolve => {
             let dialog = elementTemplate({
                 node: "dialog",
                 role: "confirm",
                 children: [
-                    { node: "p", text: message },
+                    { node: "p", text: this[translate].translate(message, ...values) },
                     {
                         node: "button",
                         text: this[translate].translate('Yes'),

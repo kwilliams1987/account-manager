@@ -206,6 +206,26 @@ class PaymentEngine extends ITranslate {
     }
 
     /**
+     * Add or update the provided template.
+     *
+     * @param {Template} template
+     */
+    addOrUpdateTemplate(template){
+        this[internal].storage.updateTemplate(template);
+        this[save]();
+    }
+
+    /**
+     * Remove a template and all it's associated payments.
+     *
+     * @param {Template} template
+     */
+    deleteTemplate(template) {
+        this[internal].storage.removeTemplate(template);
+        this[save]();
+    }
+
+    /**
      * Undo a payment in the current month.
      *
      * @param {(Guid | String | Payment)} id
