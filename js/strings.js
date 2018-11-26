@@ -138,7 +138,8 @@ Strings[internal] = {
         "Undo this payment?": "Undo this payment?",
         "Select payment to cancel.": "Select payment to cancel.",
         "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} is made of multiple sub-payments, please select which you want to cancel.",
-        "Re-open": "Re-open"
+        "Re-open": "Re-open",
+        "Data restored successfully.": "Data restored successfully."
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -215,7 +216,8 @@ Strings[internal] = {
         "Undo this payment?": "Undo this payment?",
         "Select payment to cancel.": "Select payment to cancel.",
         "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} is made of multiple sub-payments, please select which you want to cancel.",
-        "Re-open": "Re-open"
+        "Re-open": "Re-open",
+        "Data restored successfully.": "Data restored successfully."
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -284,15 +286,16 @@ Strings[internal] = {
         "Partial Payments": "In delen betaalen",
         "Edit Schedule": "Betaling wijzigen",
         "Delete": "Verwijder",
-        "Are you sure you want to delete {0} and all it's payment history?": "Bent uw zeker dat u de {0} betaling en al zijn history wilt verwijderen?",
+        "Are you sure you want to delete {0} and all it's payment history?": "Weet u zeker dat u {0} en als zijn betalingsgeschiedenis wilt verwijderen?",
         "You must provide a valid amount.": "Dit is geen geldige valuta.",
         "No pending bills!": "Geen openstaand betalingen.",
         "No pending income!": "Geen openstaand inkomsten.",
         "No paid bills!": "Geen betaald betalingen.",
         "Undo this payment?": "Verwijder dit betaaling?",
         "Select payment to cancel.": "Kies een betaaling om te verwijderen.",
-        "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} bestaat uit meerdere betalingen, welke van deze wilt uw verwijderen?",
-        "Re-open": "Heropenen"
+        "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} is gemaakt van meerdere subbetalingen. Selecteer wat u wilt annuleren.",
+        "Re-open": "Heropenen",
+        "Data restored successfully.": "Uw gegevens zijn succesvol hersteld."
     },
 }
 

@@ -208,11 +208,8 @@ document.addEventListener("DOMContentLoaded", e => {
 
             let encrypted = await engine.export(password),
                 date = new Date(Date.now()),
-                a = document.createElement('a');
+                a = `<a download="export-${date.getFullYear()}-${date.getMonth() < 9 ? "0" : ""}${date.getMonth() + 1}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}.bak" href="data:text/plain;charset=utf-8,${encodeURIComponent(encrypted)}" hidden></a>`.toHtml();
 
-            a.setAttribute('href', "data:text/plain;charset=utf-8," + encodeURIComponent(encrypted));
-            a.setAttribute('download', 'export-' + date.getFullYear() + "-" + (date.getMonth() < 9 ? "0" : "") + (date.getMonth() + 1) + "-" + date.getDate() + ".bak");
-            a.setAttribute('hidden', '');
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -251,6 +248,7 @@ document.addEventListener("DOMContentLoaded", e => {
 
                         try {
                             await engine.import(password, result);
+                            await dialogs.alert("Data restored successfully.");
                         } catch (e) {
                             if (e.name === "OperationError") {
                                 await dialogs.alert("Import failed: {0}.", engine.translate("Invalid backup password"));
