@@ -20,7 +20,7 @@ const elementTemplate = (properties) => {
      * @param {ElementTemplate} properties
      */
     let recursive = (element, properties) => {
-            if (properties.text !== undefined){
+            if (properties.text !== undefined) {
                 element.textContent = properties.text;
             }
 
@@ -44,6 +44,9 @@ const elementTemplate = (properties) => {
                 }
             });
 
+            if (properties.node.toUpperCase() === "SELECT" && properties.value !== undefined) {
+                element.value = properties.value;
+            }
             return element;
         };
 

@@ -37,10 +37,16 @@ class Guid {
         return new Guid("00000000-0000-0000-000000000000");
     }
 
+    /**
+     * @return {string}
+     */
     get value() {
         return this[internal];
     }
 
+    /**
+     * @param {?(Guid|string)} value
+     */
     constructor(value) {
         if (value === undefined) {
             this[internal] = generate();
@@ -53,12 +59,34 @@ class Guid {
         }
     }
 
+    /**
+     * @returns {string}
+     */
     toString() {
         return this.value;
     }
 
+    /**
+     * @returns {string}
+     */
     toJSON() {
         return this.value;
+    }
+
+    /**
+     * @returns {string}
+     */
+    valueOf() {
+        return this.value;
+    }
+
+    /**
+     *
+     * @param {Guid} other
+     * @returns {boolean}
+     */
+    equalTo(other) {
+        return other !== null && other instanceof Guid && other.valueOf() === this.value;
     }
 }
 

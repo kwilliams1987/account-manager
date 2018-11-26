@@ -1,6 +1,7 @@
 "use strict";
 
 const internal = Symbol("internal");
+const DEBUG = true;
 
 class ITranslate {
     /**
@@ -52,9 +53,11 @@ class Strings {
     static tryTranslate(locale, string) {
         if (Strings[internal][locale] !== undefined && Strings[internal][locale][string] !== undefined) {
             return Strings[internal][locale][string];
-        } else {
+        } else if (DEBUG) {
             console.warn(`${locale} is missing a translation for "${string}".`);
             return "$" + string;
+        } else {
+            return string;
         }
     }
 }
@@ -124,7 +127,18 @@ Strings[internal] = {
         "Annually": "Annually",
         "Save": "Save",
         "Edit": "Edit",
-        "Partial Payments": "Partial Payments"
+        "Partial Payments": "Partial Payments",
+        "Edit Schedule": "Edit Schedule",
+        "Delete": "Delete",
+        "Are you sure you want to delete {0} and all it's payment history?": "Are you sure you want to delete {0} and all it's payment history?",
+        "You must provide a valid amount.": "You must provide a valid amount.",
+        "No pending bills!": "No open bills.",
+        "No pending income!": "No expected income.",
+        "No paid bills!": "No paid bills.",
+        "Undo this payment?": "Undo this payment?",
+        "Select payment to cancel.": "Select payment to cancel.",
+        "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} is made of multiple sub-payments, please select which you want to cancel.",
+        "Re-open": "Re-open"
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -190,7 +204,18 @@ Strings[internal] = {
         "Annually": "Annually",
         "Save": "Save",
         "Edit": "Edit",
-        "Partial Payments": "Partial Payments"
+        "Partial Payments": "Partial Payments",
+        "Edit Schedule": "Edit Schedule",
+        "Delete": "Delete",
+        "Are you sure you want to delete {0} and all it's payment history?": "Are you sure you want to delete {0} and all it's payment history?",
+        "You must provide a valid amount.": "You must provide a valid amount.",
+        "No pending bills!": "No open bills.",
+        "No pending income!": "No expected income.",
+        "No paid bills!": "No paid bills.",
+        "Undo this payment?": "Undo this payment?",
+        "Select payment to cancel.": "Select payment to cancel.",
+        "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} is made of multiple sub-payments, please select which you want to cancel.",
+        "Re-open": "Re-open"
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -227,7 +252,7 @@ Strings[internal] = {
         "Planned Income": "Verwachte betaaling",
         "Unexpected Bill": "Onverwachte kost",
         "Schedule Bill": "Plan nieuwe betaling",
-        "Schedule Income": "Plan nieuwe inkomsten",
+        "Schedule Income": "Plan nieuwe inkomst",
         "Currency:": "Valuta:",
         "Switch to local currency {0}?": "Overschakelen naar lokale valuta {0}?",
         "Create Backup": "Back-up maken",
@@ -256,7 +281,18 @@ Strings[internal] = {
         "Annually": "Jaarlijks",
         "Save": "Opslaan",
         "Edit": "Bewerken",
-        "Partial Payments": "In delen betaalen"
+        "Partial Payments": "In delen betaalen",
+        "Edit Schedule": "Betaling wijzigen",
+        "Delete": "Verwijder",
+        "Are you sure you want to delete {0} and all it's payment history?": "Bent uw zeker dat u de {0} betaling en al zijn history wilt verwijderen?",
+        "You must provide a valid amount.": "Dit is geen geldige valuta.",
+        "No pending bills!": "Geen openstaand betalingen.",
+        "No pending income!": "Geen openstaand inkomsten.",
+        "No paid bills!": "Geen betaald betalingen.",
+        "Undo this payment?": "Verwijder dit betaaling?",
+        "Select payment to cancel.": "Kies een betaaling om te verwijderen.",
+        "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} bestaat uit meerdere betalingen, welke van deze wilt uw verwijderen?",
+        "Re-open": "Heropenen"
     },
 }
 

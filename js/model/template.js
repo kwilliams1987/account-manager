@@ -17,7 +17,7 @@ class Template {
             endDate: null,
             partial: false,
             recurrence: Recurrence.never,
-            created: Date.now()
+            created: new Date(Date.now())
         };
 
         if (values === undefined)
@@ -252,7 +252,7 @@ class Template {
     getRemaining(payments){
         var remaining = this.amount;
 
-        payments.filter(p => p.templateId === this.id).forEach(p => remaining -= p.amount);
+        payments.filter(p => p.templateId.equalTo(this.id)).forEach(p => remaining -= p.amount);
         return Math.max(0, remaining);
     }
 
@@ -264,8 +264,13 @@ class Template {
     getCost(payments){
         var cost = 0;
 
-        payments.filter(p => p.templateId === this.id).forEach(p => cost += p.amount);
-        return Math.max(0, cost);
+        payments.filter(p => p.templateId.equalTo(this.id)).forEach(p => cost += p.amount);
+
+        if (this.amount < 0) {
+            return Math.min(0, cost);
+        } else {
+            return Math.max(0, cost);
+        }
     }
 
     /**
@@ -275,9 +280,9 @@ class Template {
      */
     isPaid(payments){
         if (this.partial) {
-            return payments.find(p => p.templateId === this.id && p.closePartial) !== undefined;
+            return payments.find(p => p.templateId.equalTo(this.id) && p.closePartial) !== undefined;
         } else {
-            return payments.find(p => p.templateId === this.id) !== undefined;
+            return payments.find(p => p.templateId.equalTo(this.id)) !== undefined;
         }
     }
 

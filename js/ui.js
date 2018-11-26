@@ -22,6 +22,15 @@ Date.prototype.toMonthString = function () {
 }
 
 /**
+ * @returns {HTMLElement}
+ */
+String.prototype.toHtml = function () {
+    let template = document.createElement('template')
+    template.innerHTML = this.trim();
+    return template.content.firstChild;
+}
+
+/**
  * @type {PaymentEngine}
  */
 let engine = {};
@@ -32,7 +41,7 @@ let engine = {};
  */
 let dialogs = {};
 
-const handler = e => {
+const handler = async e => {
     document.getElementById('expected').value = e.caller.formatCurrency(e.caller.expected);
     document.getElementById('paid').value = e.caller.formatCurrency(e.caller.paid);
     document.getElementById('remaining').value = e.caller.formatCurrency(e.caller.remaining);
@@ -45,85 +54,95 @@ const handler = e => {
     income.clearChildren();
     paid.clearChildren();
 
-    let payments = e.caller.payments;
-    e.caller.templates.sort((t1, t2) => {
-        if (t1.name > t2.name)
-            return 1;
+    await Promise.all([e.caller.getPayments(), e.caller.getTemplates()]).then(values => {
+        let payments = values[0];
+        let templates = values[1];
 
-        if (t1.name < t2.name)
-            return -1;
+        templates.forEach(t => {
+            let cost = t.getCost(payments);
+            let excessive = cost > t.amount;
+            let isPaid = t.isPaid(payments);
+            let name = t.name;
 
-        return 0;
-    }).forEach(t => {
-        let row = document.createElement('template');
-        let cost = t.getCost(payments);
-        let excessive = cost > t.amount;
-        let isPaid = t.isPaid(payments);
-        let name = t.name;
+            if (t.benefactor !== null) {
+                name += ` <span class="benefactor">${t.benefactor}</span>`;
+            }
 
-        if (t.benefactor !== null) {
-            name += ` <span class="benefactor">${t.benefactor}</span>`;
-        }
+            if (t.amount > 0) {
+                if (isPaid || (t.partial && cost !== 0)) {
+                    let row = `
+                    <tr data-template-id="${t.id}">
+                        <td>${name}</td>
+                        <td>${e.caller.formatCurrency(t.amount)}</td>
+                        <td>${e.caller.formatCurrency(cost)}</td>
+                        <td>
+                            <button class="undo">${e.caller.translate("Undo")}</button>
+                        </td>
+                    </tr>`.toHtml();
 
-        if (t.amount > 0) {
-            if (isPaid) {
-                row.innerHTML = `
-                <tr data-template-id="${t.id}">
-                    <td>${name}</td>
-                    <td>${e.caller.formatCurrency(t.amount)}</td>
-                    <td>${e.caller.formatCurrency(cost)}</td>
-                    <td>
-                        <button class="undo">${e.caller.translate("Undo")}</button>
-                    </td>
-                </tr>`.trim();
+                    if (excessive) {
+                        row.classList.add("excessive");
+                    }
 
-                if (excessive) {
-                    row.content.firstChild.classList.add("excessive");
+                    row.dataset.entity = t;
+                    paid.appendChild(row);
                 }
 
-                row.content.firstChild.dataset.entity = t;
-                paid.appendChild(row.content.firstChild);
+                if (!isPaid) {
+                    let remaining = Math.max(0, t.amount - cost);
+
+                    let row = `
+                    <tr data-template-id="${t.id}">
+                        <td>${name}</td>
+                        <td>${e.caller.formatCurrency(t.amount)}</td>
+                        <td>${e.caller.formatCurrency(remaining)}</td>
+                        <td>
+                            <button class="pay">${e.caller.translate("Pay")}</button>
+                            <button class="ignore">${e.caller.translate("Ignore")}</button>
+                            <button class="edit">${e.caller.translate("Edit")}</button>
+                        </td>
+                    </tr>`.toHtml();
+
+                    if (excessive) {
+                        row.classList.add("excessive");
+                    }
+
+                    row.dataset.entity = t;
+                    pending.appendChild(row);
+                }
             } else {
-                let remaining = Math.max(0, t.amount - cost);
-
-                row.innerHTML = `
+                let row = `
                 <tr data-template-id="${t.id}">
                     <td>${name}</td>
-                    <td>${e.caller.formatCurrency(t.amount)}</td>
-                    <td>${e.caller.formatCurrency(remaining)}</td>
+                    <td>${e.caller.formatCurrency(t.amount * -1)}</td>
+                    <td>${e.caller.formatCurrency(cost * -1)}</td>
                     <td>
-                        <button class="pay">${e.caller.translate("Pay")}</button>
-                        <button class="ignore">${e.caller.translate("Ignore")}</button>
-                        <button class="edit">${e.caller.translate("Edit")}</button>
+                        <button class="cancel"${isPaid ? "" : " hidden"}>${e.caller.translate("Cancel")}</button>
+                        <button class="pay"${isPaid ? "hidden" : " "}>${e.caller.translate("Pay")}</button>
                     </td>
                 </tr>`.trim();
 
                 if (excessive) {
-                    row.content.firstChild.classList.add("excessive");
+                    row.classList.add("excessive");
                 }
 
-                row.content.firstChild.dataset.entity = t;
-                pending.appendChild(row.content.firstChild);
+                row.dataset.entity = t;
+                income.appendChild(row);
             }
-        } else {
-            row.innerHTML = `
-            <tr data-template-id="${t.id}">
-                <td>${name}</td>
-                <td>${e.caller.formatCurrency(t.amount * -1)}</td>
-                <td>${e.caller.formatCurrency(cost * -1)}</td>
-                <td>
-                    <button class="cancel"${isPaid ? "" : " hidden"}>${e.caller.translate("Cancel")}</button>
-                    <button class="pay"${isPaid ? "hidden" : " "}>${e.caller.translate("Pay")}</button>
-                </td>
-            </tr>`.trim();
+        });
 
-            if (excessive) {
-                row.content.firstChild.classList.add("excessive");
-            }
-
-            row.content.firstChild.dataset.entity = t;
-            income.appendChild(row.content.firstChild);
+        if (pending.children.length === 0) {
+            pending.appendChild(`<tr><td colspan="5" class="empty">${engine.translate("No pending bills!")}</td></tr>`.toHtml());
         }
+
+        if (income.children.length === 0) {
+            income.appendChild(`<tr><td colspan="4" class="empty">${engine.translate("No pending income!")}</td></tr>`.toHtml());
+        }
+
+        if (paid.children.length === 0) {
+            paid.appendChild(`<tr><td colspan="4" class="empty">${engine.translate("No paid bills!")}</td></tr>`.toHtml());
+        }
+
     });
 
     document.getElementById('locale').value = e.caller.locale;
@@ -261,36 +280,40 @@ document.addEventListener("DOMContentLoaded", e => {
         }
     });
 
-    document.querySelector('main tbody').addEventListener('click', async e => {
+    document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click', async e => {
         if (e.target instanceof HTMLElement) {
             switch (e.target.nodeName) {
                 case "BUTTON":
                     e.preventDefault();
 
                     let templateId = e.target.closest("tr").dataset.templateId;
-                    let template = engine.templates.find(t => t.id === templateId);
+                    let template = await engine.getTemplate(templateId);
 
                     if (e.target.classList.contains("pay")) {
                         let amount = await dialogs.prompt({ text: template.amount > 0 ? "Total cost:" : "Total received:", type: "number" });
                         amount = parseFloat(amount);
+
+                        if (isNaN(amount)) {
+                            await dialogs.alert("You must provide a valid amount.");
+                            return;
+                        }
 
                         if (template.amount < 0) {
                             amount *= -1;
                         }
 
                         if (template.partial && await dialogs.confirm("Close the {0} bill?", template.name)) {
-                            engine.addPayment(templateId, amount, final);
+                            await engine.addPayment(templateId, amount, true);
                         } else {
-                            engine.addPayment(templateId, amount);
+                            await engine.addPayment(templateId, amount);
                         }
                     }
 
                     if (e.target.classList.contains("ignore") && await dialogs.confirm("Ignore {0} for this cycle?", template.name)) {
-                        engine.addPayment(templateId, 0, true);
+                        await engine.addPayment(templateId, 0, true);
                     }
 
                     if (e.target.classList.contains("edit")) {
-                        let record = e.target.closest('tr').dataset.entity;
                         /**
                          * @type {Template}
                          */
@@ -355,17 +378,17 @@ document.addEventListener("DOMContentLoaded", e => {
                                             }
                                         },
                                         children: [
-                                            { node: "label", text: engine.translate("Name"), value: record.name },
-                                            { node: "input", name: "name" },
+                                            { node: "label", text: engine.translate("Name"), },
+                                            { node: "input", name: "name", value: template.name },
                                             { node: "br" },
                                             { node: "label", text: engine.translate("Cost") },
-                                            { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
+                                            { node: "input", name: "cost", type: "number", step: "0.01", min: "0", value: template.amount },
                                             { node: "br" },
                                             { node: "label", text: engine.translate("Start Date") },
-                                            { node: "input", name: "start", type: "month" },
+                                            { node: "input", name: "start", type: "month", value: template.startDate ? template.startDate.toMonthString() : "" },
                                             { node: "br" },
                                             { node: "label", text: engine.translate("End Date") },
-                                            { node: "input", name: "end", type: "month" },
+                                            { node: "input", name: "end", type: "month", value: template.endDate ? template.endDate.toMonthString() : "" },
                                             { node: "br" },
                                             { node: "label", text: engine.translate("Recurrence") },
                                             {
@@ -375,11 +398,12 @@ document.addEventListener("DOMContentLoaded", e => {
                                                     node: "option",
                                                     value: r.id,
                                                     text: r.name
-                                                }})
+                                                }}),
+                                                value: template.recurrence
                                             },
                                             { node: "br" },
                                             { node: "label", text: engine.translate("Partial Payments") },
-                                            { node: "input", name: "partial", type: "checkbox" },
+                                            { node: "input", name: "partial", type: "checkbox", checked: template.partial },
                                             { node: "br" },
                                             { node: "input", type: "submit", value: engine.translate('Save') },
                                             { node: "input", type: "reset", value: engine.translate('Cancel') },
@@ -388,8 +412,12 @@ document.addEventListener("DOMContentLoaded", e => {
                                                 text: engine.translate("Delete"),
                                                 events: {
                                                     click: async e => {
-                                                        if (await dialogs.confirm("Are you sure you want to delete {0} and all it's payment history?", record.name)) {
-                                                            engine.deleteTemplate(record);
+                                                        e.preventDefault();
+                                                        e.target.closest('dialog').close();
+                                                        document.body.removeChild(e.target.closest('dialog'));
+
+                                                        if (await dialogs.confirm("Are you sure you want to delete {0} and all it's payment history?", template.name)) {
+                                                            engine.deleteTemplate(template);
                                                             resolve(null);
                                                         }
                                                     }
@@ -408,10 +436,73 @@ document.addEventListener("DOMContentLoaded", e => {
                             engine.addOrUpdateTemplate(result);
                         }
                     }
+
+                    if (e.target.classList.contains("undo")) {
+                        var payments = await engine.getPayments().then(result => result.filter(p => p.templateId.equalTo(template.id)));
+                        if (template.partial && payments.length > 1) {
+                            let dialog = elementTemplate({
+                                node: "dialog",
+                                children: [
+                                    {
+                                        node: "form",
+                                        events: {
+                                            submit: async e => {
+                                                e.preventDefault();
+                                                let value = Array.from(e.target.children).find(e => e.name === "payment").value;
+
+                                                document.body.removeChild(dialog);
+                                                await engine.undoPayment(value);
+                                            },
+                                            reset: e => {
+                                                e.preventDefault();
+                                                document.body.removeChild(dialog);
+                                            }
+                                        },
+                                        children: [
+                                            { node: "h3", text: engine.translate("Select payment to cancel.") },
+                                            { node: "p", text: engine.translate("{0} is made of multiple sub-payments, please select which you want to cancel.", template.name) },
+                                            {
+                                                node: "select",
+                                                name: "payment",
+                                                children: payments.map(p => { return {
+                                                    node: "option",
+                                                    text: `${p.created.toDateString()} - ${engine.formatCurrency(p.amount)}`,
+                                                    value: p.id
+                                                }})
+                                            },
+                                            { node: "br" },
+                                            {
+                                                node: "button",
+                                                text: engine.translate("Re-open"),
+                                                events: {
+                                                    click: async e => {
+                                                        e.preventDefault();
+                                                        let payment = payments.find(p => p.closePartial);
+                                                        if (payment !== undefined) {
+                                                            payment.closePartial = false;
+                                                            await engine.addPayment(payment);
+                                                        }
+                                                        document.body.removeChild(dialog);
+                                                    }
+                                                }
+                                            },
+                                            { node: "input", type: "submit", value: engine.translate("Delete") },
+                                            { node: "input", type: "reset", value: engine.translate("Cancel") }
+                                        ]
+                                    }
+                                ]
+                            });
+
+                            document.body.appendChild(dialog);
+                            dialog.showModal();
+                        } else if (await dialogs.confirm("Undo this payment?")) {
+                            await engine.undoPayment(payments[0]);
+                        }
+                    }
                     return;
             }
         }
-    });
+    }));
 
     document.getElementById('schedule-bill').addEventListener('click', async e => {
         let template = await new Promise(resolve => {

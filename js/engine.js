@@ -59,9 +59,45 @@ class PaymentEngine extends ITranslate {
             }
         };
 
-        this[save] = () => {
+        this[save] = async () => {
             localStorage.eyePaymentEngine = JSON.stringify(this[internal].storage);
-            this[internal].trigger('change');
+
+            this[internal].expected = 0;
+            this[internal].paid = 0;
+            this[internal].remaining = 0;
+
+            await Promise.all([this.getPayments(), this.getTemplates()]).then(values => {
+                let payments = values[0];
+                let templates = values[1];
+
+                templates.forEach(template => {
+                    if (template.amount > 0) {
+                        this[internal].expected += template.amount;
+                        if (template.partial) {
+                            let paid = false;
+                            let total = 0;
+
+                            payments.filter(p => p.templateId === template.id).forEach(payment => {
+                                total += payment.amount;
+                                paid |= payment.closePartial;
+                            });
+
+                            if (!paid) {
+                                this[internal].remaining += Math.max(0, template.amount - total);
+                            }
+                        } else if (payments.find(p => p.templateId === template.id) === undefined) {
+                            this[internal].remaining += template.amount;
+                        }
+                    }
+                });
+
+                payments.forEach(payment => {
+                    this[internal].paid += payment.amount;
+                });
+
+
+                this[internal].trigger('change');
+            });
         }
 
         try {
@@ -92,38 +128,6 @@ class PaymentEngine extends ITranslate {
         if (value instanceof Date) {
             if (value != this[internal].storage.date) {
                 this[internal].storage.date = value;
-
-
-                this[internal].expected = 0;
-                this[internal].paid = 0;
-                this[internal].remaining = 0;
-
-                let payments = this.payments;
-                this.templates.forEach(template => {
-                    if (template.amount > 0) {
-                        this[internal].expected += template.amount;
-                        if (template.partial) {
-                            let paid = false;
-                            let total = 0;
-
-                            payments.filter(p => p.templateId === template.id).forEach(payment => {
-                                total += payment.amount;
-                                paid |= payment.closePartial;
-                            });
-
-                            if (!paid) {
-                                this[internal].remaining += Math.max(0, template.amount - total);
-                            }
-                        } else if (payments.find(p => p.templateId === template.id) === undefined) {
-                            this[internal].remaining += template.amount;
-                        }
-                    }
-                });
-
-                payments.forEach(payment => {
-                    this[internal].paid += payment.amount;
-                });
-
                 this[save]();
             }
         } else {
@@ -146,45 +150,79 @@ class PaymentEngine extends ITranslate {
     /**
      * Get payments for currently selected month.
      *
-     * @prop {Payment[]}
+     * @return {Promise<Payment[]>}
      */
-    get payments() {
+    async getPayments() {
         return this[internal].storage.getPaymentsByMonth(this.month);
     }
 
     /**
      * Get templates for currently selected month.
      *
-     * @prop {Template[]}
+     * @return {Promise<Template[]>}
      */
-    get templates() {
-        return this[internal].storage.getTemplatesByMonth(this.month);
+    async getTemplates() {
+        return this[internal].storage.getTemplatesByMonth(this.month).then(result => {
+            return result.sort((t1, t2) => {
+                if (t1.name > t2.name)
+                    return 1;
+
+                if (t1.name < t2.name)
+                    return -1;
+
+                return 0;
+            });
+        });
+    }
+
+    /**
+     * Get template by Id.
+     *
+     * @param {guid} id
+     * @returns {Promise<Template>}
+     */
+    async getTemplate(id) {
+        if (typeof id === "string") {
+            id = new Guid(id);
+        }
+
+        if (id instanceof Guid) {
+            return this[internal].storage.getTemplate(id);
+        } else {
+            throw new TypeError("id must be a string or Guid");
+        }
     }
 
     /**
      * Attempts to pay the provided template in the current month.
+     * Updates a payment if provided.
      *
-     * @param {(Guid|string)} id Template ID
+     * @param {(Payment|Guid|string)} id Template ID
      * @param {Number} amount
      * @param {boolean} [final=false]
      */
-    addPayment(id, amount, final = false) {
-        if (typeof id === "string")
-            id = new Guid(id);
+    async addPayment(id, amount, final = false) {
+        if (id instanceof Payment) {
+            payment = id;
+        } else {
+            if (typeof id === "string")
+                id = new Guid(id);
 
-        var template = this.templates.find(t => t.id === id);
-        if (template === undefined) {
-            throw new RangeError("template does not exist in the current month");
-        }
+            var template = await this.getTemplate(id);
+            if (template === undefined) {
+                throw new RangeError("template does not exist in the current month");
+            }
 
-        var payments = this.payments.filter(p => p.templateId === id);
-        if ((template.partial && payments.find(p => p.closePartial)) || payments.length > 0) {
-            throw new RangeError("This template has already been paid");
-        }
+            var payments = await this.getPayments();
+            payments = payments.filter(p => p.templateId.equalTo(id));
+            if (payments.find(p => p.closePartial) || (template.partial === false && payments.length > 0)) {
+                throw new RangeError("This template has already been paid");
+            }
 
-        var payment = new Payment(template, this.month, amount);
-        if (template.partial && final) {
-            payment.closePartial = true;
+            var payment = new Payment(template, this.month, amount);
+            if (template.partial && final) {
+                payment.closePartial = true;
+            }
         }
 
         this[internal].storage.updatePayment(payment);
@@ -230,7 +268,7 @@ class PaymentEngine extends ITranslate {
      *
      * @param {(Guid | String | Payment)} id
      */
-    undoPayment(id) {
+    async undoPayment(id) {
         if (typeof id === "string") {
             id = new Guid(id);
         }
@@ -239,7 +277,7 @@ class PaymentEngine extends ITranslate {
             id = id.id
         }
 
-        var payment = this.payments.find(p => p.id === id);
+        var payment = await this.getPayments().then(payments => payments.find(p => p.id.equalTo(id)));
         if (payment === undefined) {
             throw new Error("payment not found");
         }

@@ -22,7 +22,7 @@ class Payment {
             amount: 0,
             date: null,
             closePartial: false,
-            created: Date.now()
+            created: new Date(Date.now())
         };
 
         if (values === undefined)
@@ -67,12 +67,21 @@ class Payment {
                 this[internal].closePartial = closePartial;
             }
         } else {
-            this[internal].id = values.id;
-            this[internal].templateId = values.templateId;
+            this[internal].id = new Guid(values.id);
+            this[internal].templateId = new Guid(values.templateId);
             this[internal].name = values.name;
             this[internal].amount = values.amount;
-            this[internal].date = values.date;
+            if (values.date instanceof Date) {
+                this[internal].date = values.date;
+            } else {
+                this[internal].date = new Date(values.date);
+            }
             this[internal].closePartial = values.closePartial;
+            if (values.created instanceof Date) {
+                this[internal].created = values.created;
+            } else {
+                this[internal].created = new Date(values.created);
+            }
         }
     }
 
@@ -153,11 +162,18 @@ class Payment {
     }
 
     set closePartial(value) {
-        if (this[internal].templateId !== null && this[internal].templateId !== Guid.empty) {
+        if (this[internal].templateId === null || this[internal].templateId.equalTo(Guid.empty)) {
             throw new Error("Cannot close custom scheduled payments.");
         }
 
         this[internal].closePartial = value;
+    }
+
+    /**
+     * @returns {Date}
+     */
+    get date() {
+        return this[internal].date;
     }
 
     /**

@@ -6,18 +6,6 @@ import { Template } from "./model/template.js";
 
 const internal = Symbol("internal");
 
-const paymentProxy = {
-    set (target, property, value) {
-        Reflect.set(target, property, value);
-    }
-};
-
-const templateProxy = {
-    set (target, property, value) {
-        Reflect.set(target, property, value);
-    }
-};
-
 class MoneyStorage {
     /**
      *
@@ -56,11 +44,19 @@ class MoneyStorage {
         }
 
         if (storage.payments !== undefined && Array.isArray(storage.payments)) {
-            storage.payments.forEach(p => this[internal].payments.push(new Proxy(new Payment(p), paymentProxy)));
+            storage.payments.forEach(p => {
+                if (p.id !== undefined) {
+                    this[internal].payments.push(new Payment(p))
+                }
+            });
         }
 
         if (storage.templates !== undefined && Array.isArray(storage.templates)) {
-            storage.templates.forEach(t => this[internal].templates.push(new Proxy(new Template(t), templateProxy)));
+            storage.templates.forEach(t => {
+                if (t.id !== undefined) {
+                    this[internal].templates.push(new Template(t))
+                }
+            });
         }
 
         if (typeof(storage.locale) === "string" && storage.locale.length > 0) {
@@ -119,14 +115,14 @@ class MoneyStorage {
      * Get all payments for the current month.
      *
      * @param {Date} month
-     * @returns {Payment[]}
+     * @returns {Promise<Payment[]>}
      * @throws {TypeError} if month is not a Date.
      */
     getPaymentsByMonth(month) {
         if (month instanceof Date) {
-            return this[internal].payments.filter(p => p.date.getFullYear() === month.getFullYear() && p.date.getMonth() === month.getMonth());
+            return new Promise(resolve => resolve(this[internal].payments.filter(p => p.date instanceof Date && p.date.getFullYear() === month.getFullYear() && p.date.getMonth() === month.getMonth())));
         } else {
-            throw new TypeError("month is not a valid date.");
+            throw new TypeError("month is not a valid Date.");
         }
     }
 
@@ -134,10 +130,15 @@ class MoneyStorage {
      * Get payment with specified ID.
      *
      * @param {Guid} id
-     * @returns {?Payment}
+     * @returns {Promise<?Payment>}
+     * @throws {TypeError} if id is not a Guid.
      */
     getPayment(id) {
-        return this[internal].payment.find(p => p.id === id);
+        if (id instanceof Guid) {
+            return new Promise(resolve => resolve(this[internal].payment.find(p => p.id.equalTo(id))));
+        } else {
+            throw new TypeError("id is not a valid Guid.");
+        }
     }
 
     /**
@@ -148,8 +149,8 @@ class MoneyStorage {
     updatePayment(payment) {
         if (payment instanceof Payment){
             for (let p = 0; p < this[internal].payments.length; p++) {
-                if (payment.id === this[internal].payments[p].id) {
-                    this[internal].payment[p] = payment;
+                if (payment.id.equalTo(this[internal].payments[p].id)) {
+                    this[internal].payments[p] = payment;
                     return;
                 }
             }
@@ -172,7 +173,7 @@ class MoneyStorage {
 
         if (payment instanceof Guid) {
             for (let p = 0; p < this[internal].payments.length; p++) {
-                if (payment === this[internal].payments[p].id) {
+                if (payment.equalTo(this[internal].payments[p].id)) {
                     this[internal].payments.splice(p, 1);
                     return;
                 }
@@ -193,12 +194,12 @@ class MoneyStorage {
      * Get all templates for the current month.
      *
      * @param {Date} month
-     * @returns {Template[]}
+     * @returns {Promise<Template[]>}
      * @throws {TypeError} if month is not a Date.
      */
     getTemplatesByMonth(month) {
         if (month instanceof Date) {
-            return this[internal].templates.filter(t => t.isDueInMonth(month));
+            return new Promise(resolve => resolve(this[internal].templates.filter(t => t.isDueInMonth(month))));
         } else {
             throw new TypeError("month is not a valid date.");
         }
@@ -208,10 +209,14 @@ class MoneyStorage {
      * Get template with specified ID.
      *
      * @param {Guid} id
-     * @returns {?Template}
+     * @returns {Promise<?Template>}
      */
     getTemplate(id) {
-        return this[internal].templates.find(t => t.id === id);
+        if (id instanceof Guid) {
+            return new Promise(resolve => resolve(this[internal].templates.find(t => t.id.equalTo(id))));
+        } else {
+            throw new TypeError("id is not a valid Guid.");
+        }
     }
 
     /**
@@ -224,7 +229,7 @@ class MoneyStorage {
             /**
              * @type {Template}
              */
-            var current = this[internal].templates.find(t => t.id === template.id);
+            var current = this[internal].templates.find(t => t.id.equalTo(template.id));
             if (current === undefined) {
                 this[internal].templates.push(template);
             } else {
@@ -253,13 +258,13 @@ class MoneyStorage {
 
         if (template instanceof Guid) {
             for (let p = 0; p < this[internal].payments.length; p++) {
-                if (template === this[internal].payments[p].templateId) {
+                if (template.equalTo(this[internal].payments[p].templateId)) {
                     this[internal].payments.splice(p, 1);
                 }
             }
 
             for (let t = 0; t < this[internal].templates.length; t++) {
-                if (template === this[internal].templates[t].id) {
+                if (template.equalTo(this[internal].templates[t].id)) {
                     this[internal].templates.splice(t, 1);
                     return;
                 }
