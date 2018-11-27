@@ -250,8 +250,8 @@ document.addEventListener("DOMContentLoaded", e => {
                             return;
 
                         try {
-                            await engine.import(password, new Uint8Array(read.target.result));
-                            await dialogs.alert("Data restored successfully.");
+                            let version = await engine.import(password, new Uint8Array(read.target.result));
+                            await dialogs.alert("Data restored successfully (v{0}).", version);
                         } catch (e) {
                             if (e.name === "OperationError") {
                                 await dialogs.alert("Import failed: {0}.", engine.translate("Invalid backup password"));

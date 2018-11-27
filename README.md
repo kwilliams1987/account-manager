@@ -7,7 +7,7 @@ Features:
   * Automatically synchronised across browser tabs/windows.
   * Automatically saved on changes.
   * Zero network traffic after downloading codebase.
-* Payments and income with recurrence patterns.
+* Payments and income with recurrence patterns
   * Once
   * Monthly
   * Bi-monthly
@@ -18,7 +18,7 @@ Features:
   * Password protected.
   * Encrypted with AES-GCM using 256 bit key length.
   * All done on the client side using Javascript `crypto.subtle` package.
-  
+
 To-do:
 * Styling
   * Fully responsive for mobile.

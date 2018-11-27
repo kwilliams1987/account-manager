@@ -124,26 +124,39 @@ class Encryption {
      * @param {Uint8Array} bytes
      */
     static async version(bytes) {
-        for (let b = 0; b <= header.length; b++) {
-            if (bytes[b] !== header[b]) {
-                return "INVALID";
-            }
-        }
-
-        let matches = algos.filter(a => {
-            for (let b = 0; b <= header.length; b++) {
-                if (encrypted[index] !== a.header[index]) {
-                    return false;
+        return new Promise(resolve => {
+            for (let b = 0; b < header.length; b++) {
+                if (bytes[b] !== header[b]) {
+                    resolve(null);
                 }
             }
-            return true;
-        });
 
-        switch (matches.length) {
-            case 0: return "UNSUPPORTED";
-            case 1: return matches[0].version;
-            default: throw new Error("More than one algorithm matched the data.");
-        }
+            if (bytes[8] !== 0xff) {
+                resolve(null);
+            }
+
+            if (bytes[15] !== 0xff) {
+                resolve(null);
+            }
+
+            let version = "";
+            for (let b = 10; b < 15; b++) {
+                if (bytes[b] === 0x00 && version === "")
+                    continue;
+
+                if (version !== "") {
+                    version +=  ".";
+                }
+
+                version += bytes[b];
+            }
+
+            if (version === "") {
+                resolve(null);
+            }
+
+            resolve(version);
+        });
     }
 }
 

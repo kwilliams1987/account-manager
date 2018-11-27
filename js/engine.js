@@ -394,7 +394,7 @@ class PaymentEngine extends ITranslate {
      *
      * @param {String} password must be at least 6 characters long.
      * @param {Uint8Array} encrypted
-     * @returns {Promise<void>}
+     * @returns {Promise<string>} version number of import.
      * @throws {Error} if encryption isn't supported.
      */
     async import(password, encrypted) {
@@ -404,6 +404,12 @@ class PaymentEngine extends ITranslate {
        if (typeof password !== "string" || password.length < 6)
            throw new TypeError(this.translate("Password must be at least {0} characters.", 6));
 
+        let version = await Encryption.version(encrypted);
+
+        if (version === null) {
+            throw new Exception(this.translate("Invalid backup format."));
+        }
+
         let result = await Encryption.decrypt(password, encrypted);
 
         JSON.parse(result);
@@ -411,6 +417,7 @@ class PaymentEngine extends ITranslate {
         localStorage.eyePaymentEngine = result;
         this[internal].storage = new MoneyStorage(result);
         this[internal].trigger('change');
+        return version;
     }
 
     toJSON() {
