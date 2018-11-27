@@ -139,7 +139,10 @@ Strings[internal] = {
         "Select payment to cancel.": "Select payment to cancel.",
         "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} is made of multiple sub-payments, please select which you want to cancel.",
         "Re-open": "Re-open",
-        "Data restored successfully.": "Data restored successfully."
+        "Data restored successfully.": "Data restored successfully.",
+        "Backups": "Backups",
+        "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.": "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.",
+        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it."
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -217,7 +220,10 @@ Strings[internal] = {
         "Select payment to cancel.": "Select payment to cancel.",
         "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} is made of multiple sub-payments, please select which you want to cancel.",
         "Re-open": "Re-open",
-        "Data restored successfully.": "Data restored successfully."
+        "Data restored successfully.": "Data restored successfully.",
+        "Backups": "Backups",
+        "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.": "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.",
+        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it."
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -295,7 +301,10 @@ Strings[internal] = {
         "Select payment to cancel.": "Kies een betaaling om te verwijderen.",
         "{0} is made of multiple sub-payments, please select which you want to cancel.": "{0} is gemaakt van meerdere subbetalingen. Selecteer wat u wilt annuleren.",
         "Re-open": "Heropenen",
-        "Data restored successfully.": "Uw gegevens zijn succesvol hersteld."
+        "Data restored successfully.": "Uw gegevens zijn succesvol hersteld.",
+        "Backups": "Back-ups",
+        "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.": "Alle back-ups zijn gecodeerd met 256-bits AES-GCM-codering. U moet een wachtwoord van minimaal 6 tekens opgeven.",
+        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Bewaar uw back-upwachtwoorden veilig, ze worden nergens opgeslagen en uw back-up is onbruikbaar zonder deze."
     },
 }
 

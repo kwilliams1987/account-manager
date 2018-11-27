@@ -113,6 +113,7 @@ class DialogManager {
      */
     async prompt(message, ...parameters) {
         let type = "text";
+        let autocomplete = "";
         if (typeof message === "object") {
             if (typeof message.text !== "string") {
                 throw Error("message isn't a valid PromptOptions object");
@@ -120,6 +121,9 @@ class DialogManager {
 
             if (typeof message.type === "string") {
                 type = message.type;
+                if (type === "password") {
+                    autocomplete = "new-password";
+                }
             }
 
             if (Array.isArray(message.parameters)) {
@@ -152,7 +156,7 @@ class DialogManager {
                         },
                         children: [
                             { node: "label", text: this[translate].translate(message, ...parameters) },
-                            { node: "input", type: type, name: "value" },
+                            { node: "input", type: type, name: "value", autocomplete: autocomplete },
                             { node: "br" },
                             { node: "input", type: "submit", value: this[translate].translate('Okay') },
                             { node: "input", type: "reset", value: this[translate].translate('Cancel') }

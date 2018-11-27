@@ -120,7 +120,7 @@ const handler = async e => {
                         <button class="cancel"${isPaid ? "" : " hidden"}>${e.caller.translate("Cancel")}</button>
                         <button class="pay"${isPaid ? "hidden" : " "}>${e.caller.translate("Pay")}</button>
                     </td>
-                </tr>`.trim();
+                </tr>`.toHtml();
 
                 if (excessive) {
                     row.classList.add("excessive");
@@ -172,7 +172,6 @@ document.addEventListener("DOMContentLoaded", e => {
     dialogs = new DialogManager(engine);
 
     engine.addEventListener('change', handler);
-    handler({ caller: engine });
 
     document.getElementById('month').value = engine.month.toMonthString();
     document.getElementById('month').addEventListener('change', e => engine.month = new Date(e.target.value + "-01"));
@@ -196,6 +195,12 @@ document.addEventListener("DOMContentLoaded", e => {
 
     translate(engine);
 
+    document.getElementById('now').addEventListener('click', async e => {
+        var date = new Date(Date.now()).toMonthString();
+        engine.month = new Date(date + "-01");
+        document.getElementById('month').value = date;
+    });
+
     document.getElementById('export').addEventListener('click', async e => {
         e.preventDefault();
 
@@ -208,12 +213,16 @@ document.addEventListener("DOMContentLoaded", e => {
 
             let encrypted = await engine.export(password),
                 date = new Date(Date.now()),
-                a = `<a download="export-${date.getFullYear()}-${date.getMonth() < 9 ? "0" : ""}${date.getMonth() + 1}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}.bak" href="data:text/plain;charset=utf-8,${encodeURIComponent(encrypted)}" hidden></a>`.toHtml();
+                blob = new Blob([encrypted], { type: "binary/octet-stream" });
 
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } catch(e) {
+            let link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = `backup-${date.getFullYear()}-${date.getMonth() < 9 ? "0" : ""}${date.getMonth() + 1}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}.money`;
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (e) {
             await dialogs.alert("Export failed: {0}.", e.message);
         }
     });
@@ -236,18 +245,12 @@ document.addEventListener("DOMContentLoaded", e => {
                 reader.onload = async read => {
                     change.target.value = "";
                     try {
-                        let result = JSON.parse(read.target.result);
-
-                        if (result.cypherText === undefined || result.iv === undefined) {
-                            throw new Error(engine.translate("Invalid backup selected"));
-                        }
-
                         let password = await dialogs.prompt({ text: "Backup password:", type: "password" });
                         if (password === null)
                             return;
 
                         try {
-                            await engine.import(password, result);
+                            await engine.import(password, new Uint8Array(read.target.result));
                             await dialogs.alert("Data restored successfully.");
                         } catch (e) {
                             if (e.name === "OperationError") {
@@ -271,7 +274,7 @@ document.addEventListener("DOMContentLoaded", e => {
                     throw read.error;
                 };
 
-                reader.readAsText(files.item(0));
+                reader.readAsArrayBuffer(files.item(0));
             }
         } catch (error) {
             dialogs.alert("Import failed: {0}.", error.message);

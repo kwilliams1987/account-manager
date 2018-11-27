@@ -40,6 +40,23 @@ class PaymentEngine extends ITranslate {
                         return;
                 }
             },
+            /**
+             * Get default encryption parameters.
+             *
+             * @returns {AesGcmParams}
+             * @param {?Uint8Array} iv
+             */
+            getAlgorthm(iv) {
+                if (iv === undefined) {
+                    iv = crypto.getRandomValues(new Uint8Array(16));
+                }
+
+                return {
+                    name: 'AES-GCM',
+                    length: 256,
+                    iv: iv
+                };
+            },
             generateKey: async (password) => {
                 if (!exportable)
                     throw new Error(this.translate("Your browser doesn't support encryption"));
@@ -55,7 +72,7 @@ class PaymentEngine extends ITranslate {
                     iterations: 1000
                 };
                 let key = await crypto.subtle.importKey('raw', encoder.encode(password), { name: 'PBKDF2'}, false, ['deriveKey']);
-                return crypto.subtle.deriveKey(algo, key, { name: "AES-GCM", length: 256 }, false, ['encrypt', 'decrypt']);
+                return crypto.subtle.deriveKey(algo, key, this[internal].getAlgorthm(), false, ['encrypt', 'decrypt']);
             }
         };
 
@@ -70,29 +87,27 @@ class PaymentEngine extends ITranslate {
                 let payments = values[0];
                 let templates = values[1];
 
-                templates.forEach(template => {
-                    if (template.amount > 0) {
-                        this[internal].expected += template.amount;
-                        if (template.partial) {
-                            let paid = false;
-                            let total = 0;
+                templates.filter(t => t.amount > 0).forEach(t => {
+                    this[internal].expected += t.amount;
+                    if (t.partial) {
+                        let paid = false;
+                        let total = 0;
 
-                            payments.filter(p => p.templateId === template.id).forEach(payment => {
-                                total += payment.amount;
-                                paid |= payment.closePartial;
-                            });
+                        payments.filter(p => p.templateId.equalTo(t.id)).forEach(payment => {
+                            total += payment.amount;
+                            paid |= payment.closePartial;
+                        });
 
-                            if (!paid) {
-                                this[internal].remaining += Math.max(0, template.amount - total);
-                            }
-                        } else if (payments.find(p => p.templateId === template.id) === undefined) {
-                            this[internal].remaining += template.amount;
+                        if (!paid) {
+                            this[internal].remaining += Math.max(0, t.amount - total);
                         }
+                    } else if (payments.find(p => p.templateId === t.id) === undefined) {
+                        this[internal].remaining += t.amount;
                     }
                 });
 
-                payments.forEach(payment => {
-                    this[internal].paid += payment.amount;
+                payments.filter(p => p.amount > 0).forEach(p => {
+                    this[internal].paid += p.amount;
                 });
 
 
@@ -113,6 +128,8 @@ class PaymentEngine extends ITranslate {
                 this[internal].trigger('change');
             }
         });
+
+        this[save]();
     }
 
     /**
@@ -397,43 +414,34 @@ class PaymentEngine extends ITranslate {
      */
     async export(password) {
         let key = await this[internal].generateKey(password),
-            encoder = new TextEncoder(),
-            algo = {
-                name: 'AES-GCM',
-                length: 256,
-                iv: crypto.getRandomValues(new Uint8Array(16))
-            },
-            result = await crypto.subtle.encrypt(algo, key, encoder.encode(JSON.stringify(this[internal].storage)));
+            algo = await this[internal].getAlgorthm(),
+            encoder = new TextEncoder();
 
-        return JSON.stringify({
-            cypherText: btoa(String.fromCharCode(...new Uint8Array(result))),
-            iv: btoa(String.fromCharCode(...new Uint8Array(algo.iv)))
-        });
+        let encrypted = new Uint8Array(await crypto.subtle.encrypt(algo, key, encoder.encode(JSON.stringify(this[internal].storage))));
+        let output = new Uint8Array(algo.iv.length + encrypted.length);
+        output.set(algo.iv);
+        output.set(encrypted, algo.iv.length);
+
+        return output;
     }
 
     /**
      * Decrypts the provided storage set with the password, and overwrites the current dataset.
      *
      * @param {String} password must be at least 6 characters long.
-     * @param {String} encrypted
+     * @param {Uint8Array} encrypted
      * @returns {Promise<void>}
      * @throws {Error} if encryption isn't supported.
-     * @throws {TypeError} if the password isn't a string or is too weak.
      */
     async import(password, encrypted) {
-        if (typeof encrypted === "text") {
-            encrypted = JSON.parse(encrypted);
-        }
+        let iv = encrypted.subarray(0, 16),
+            key = await this[internal].generateKey(password),
+            algo = this[internal].getAlgorthm(iv);
 
-        let key = await this[internal].generateKey(password),
-            algo = {
-                name: 'AES-GCM',
-                length: 256,
-                iv: Uint8Array.from(atob(encrypted.iv), c => c.charCodeAt(0))
-            },
-            bytes = Uint8Array.from(atob(encrypted.cypherText), c => c.charCodeAt(0)),
-            source = await crypto.subtle.decrypt(algo, key, bytes),
-            result = new TextDecoder().decode(source);
+        encrypted = encrypted.subarray(16);
+
+        let output = await crypto.subtle.decrypt(algo, key, encrypted),
+            result = new TextDecoder().decode(output);
 
         JSON.parse(result);
 

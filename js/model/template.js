@@ -238,6 +238,50 @@ class Template {
                     }
 
                     return this.startDate <= month && this.endDate >= month;
+
+                case Recurrence.bimonthly:
+                    if (this.startDate === null) {
+                        return false;
+                    }
+
+                    if (this.endDate !== null && this.endDate < month) {
+                        return false;
+                    }
+
+                    return month.getMonth() % 2 === this.startDate.getMonth() % 2;
+
+                case Recurrence.quarterly:
+                    if (this.startDate === null) {
+                        return false;
+                    }
+
+                    if (this.endDate !== null && this.endDate < month) {
+                        return false;
+                    }
+
+                    return month.getMonth() % 3 === this.startDate.getMonth() % 3;
+
+                case Recurrence.biannually:
+                    if (this.startDate === null) {
+                        return false;
+                    }
+
+                    if (this.endDate !== null && this.endDate < month) {
+                        return false;
+                    }
+
+                    return month.getMonth() % 6 === this.startDate.getMonth() % 6;
+
+                case Recurrence.annually:
+                    if (this.startDate === null) {
+                        return false;
+                    }
+
+                    if (this.endDate !== null && this.endDate < month) {
+                        return false;
+                    }
+
+                    return month.getMonth() === this.startDate.getMonth();
             }
         } else {
             throw new TypeError("month is not a date");
