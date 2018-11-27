@@ -31,8 +31,8 @@
                             <th class="translate">Budgetted</th>
                             <th class="translate">Remaining</th>
                             <td>
-                                <button id="schedule-bill" class="translate">Schedule Bill</button>
-                                <button id="unexpected-bill" class="translate">Unexpected Bill</button>
+                                <button class="schedule bill" class="translate">Schedule Bill</button>
+                                <button class="unexpected bill" class="translate">Unexpected Bill</button>
                             </td>
                         </tr>
                     </thead>
@@ -50,8 +50,8 @@
                             <th class="translate">Expected</th>
                             <th class="translate">Received</th>
                             <td>
-                                <button id="schedule-income" class="translate">Schedule Income</button>
-                                <button id="unexpected-income" class="translate">Unexpected Income</button>
+                                <button class="schedule income" class="translate">Schedule Income</button>
+                                <button class="unexpected income" class="translate">Unexpected Income</button>
                             </td>
                         </tr>
                     </thead>
@@ -80,7 +80,8 @@
                 <h2 class="translate">Settings</h2>
 
                 <label for="locale" class="translate">Language:</label> <select id="locale"></select><br>
-                <label for="currency" class="translate">Currency:</label> <select id="currency"></select>
+                <label for="currency" class="translate">Currency:</label> <select id="currency"></select><br>
+                <label for="excessive" class="translate">Excess Payment Margin:</label> <input id="excessive" type="number" step="1" min="0">%
                 <hr>
                 <h2 class="translate">Backups</h2>
                 <p class="translate">All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.</p>

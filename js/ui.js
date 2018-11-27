@@ -57,10 +57,11 @@ const handler = async e => {
     await Promise.all([e.caller.getPayments(), e.caller.getTemplates()]).then(values => {
         let payments = values[0];
         let templates = values[1];
+        let excessMod = 1 + (e.caller.excessive / 100);
 
         templates.forEach(t => {
             let cost = t.getCost(payments);
-            let excessive = cost > t.amount;
+            let excessive = cost > t.amount * excessMod;
             let isPaid = t.isPaid(payments);
             let name = t.name;
 
@@ -74,17 +75,24 @@ const handler = async e => {
                     <tr data-template-id="${t.id}">
                         <td>${name}</td>
                         <td>${e.caller.formatCurrency(t.amount)}</td>
-                        <td>${e.caller.formatCurrency(cost)}</td>
+                        <td>${cost === 0 ? '' : e.caller.formatCurrency(cost)}</td>
                         <td>
                             <button class="undo">${e.caller.translate("Undo")}</button>
                         </td>
                     </tr>`.toHtml();
 
+                    if (t.partial) {
+                        row.classList.add("partial");
+                    }
+
+                    if (!t.partial && cost === 0) {
+                        row.classList.add("ignored");
+                    }
+
                     if (excessive) {
                         row.classList.add("excessive");
                     }
 
-                    row.dataset.entity = t;
                     paid.appendChild(row);
                 }
 
@@ -103,11 +111,14 @@ const handler = async e => {
                         </td>
                     </tr>`.toHtml();
 
+                    if (t.partial && cost !== 0) {
+                        row.classList.add("partial");
+                    }
+
                     if (excessive) {
                         row.classList.add("excessive");
                     }
 
-                    row.dataset.entity = t;
                     pending.appendChild(row);
                 }
             } else {
@@ -115,18 +126,18 @@ const handler = async e => {
                 <tr data-template-id="${t.id}">
                     <td>${name}</td>
                     <td>${e.caller.formatCurrency(t.amount * -1)}</td>
-                    <td>${e.caller.formatCurrency(cost * -1)}</td>
+                    <td>${isPaid ? e.caller.formatCurrency(cost * -1) : ''}</td>
                     <td>
-                        <button class="cancel"${isPaid ? "" : " hidden"}>${e.caller.translate("Cancel")}</button>
+                        <button class="edit">${e.caller.translate("Edit")}</button>
+                        <button class="cancel"${isPaid ? "" : " hidden"}>${e.caller.translate("Undo")}</button>
                         <button class="pay"${isPaid ? "hidden" : " "}>${e.caller.translate("Pay")}</button>
                     </td>
                 </tr>`.toHtml();
 
-                if (excessive) {
+                if (cost > t.amount && isPaid) {
                     row.classList.add("excessive");
                 }
 
-                row.dataset.entity = t;
                 income.appendChild(row);
             }
         });
@@ -145,8 +156,11 @@ const handler = async e => {
 
     });
 
+    document.getElementById('month').removeAttribute('disabled');
+    document.getElementById('now').removeAttribute('disabled');
     document.getElementById('locale').value = e.caller.locale;
     document.getElementById('currency').value = e.caller.currency;
+    document.getElementById('excessive').value = e.caller.excessive;
     translate(e.caller);
 }
 
@@ -174,10 +188,16 @@ document.addEventListener("DOMContentLoaded", e => {
     engine.addEventListener('change', handler);
 
     document.getElementById('month').value = engine.month.toMonthString();
-    document.getElementById('month').addEventListener('change', e => engine.month = new Date(e.target.value + "-01"));
+    document.getElementById('month').addEventListener('change', e => {
+        e.target.setAttribute('disabled', '');
+        document.getElementById('now').setAttribute('disabled', '');
+
+        engine.month = new Date(e.target.value + "-01")
+    });
 
     let locales = document.getElementById("locale");
     let currencies = document.getElementById("currency");
+    let excessive = document.getElementById("excessive");
 
     engine.locales.forEach(e => locales.appendChild(new Option(e.name, e.locale)));
     locales.value = engine.locale;
@@ -191,11 +211,16 @@ document.addEventListener("DOMContentLoaded", e => {
 
     engine.currencies.forEach(e => currencies.appendChild(new Option(e.name, e.code)));
     currencies.value = engine.currency;
+
     currencies.addEventListener("change", e => engine.currency = e.target.value);
+    excessive.addEventListener("change", e => engine.excessive = e.target.value);
 
     translate(engine);
 
     document.getElementById('now').addEventListener('click', async e => {
+        e.target.setAttribute('disabled', '');
+        document.getElementById('month').setAttribute('disabled', '');
+
         var date = new Date(Date.now()).toMonthString();
         engine.month = new Date(date + "-01");
         document.getElementById('month').value = date;
@@ -291,7 +316,18 @@ document.addEventListener("DOMContentLoaded", e => {
                     let template = await engine.getTemplate(templateId);
 
                     if (e.target.classList.contains("pay")) {
-                        let amount = await dialogs.prompt({ text: template.amount > 0 ? "Total cost:" : "Total received:", type: "number" });
+                        let options = {
+                            text: template.amount > 0 ? "Total cost:" : "Total received:",
+                            type: "number",
+                            step: "0.01",
+                            min: 0,
+                            value: template.amount * -1
+                        },
+                            amount = await dialogs.prompt(options);
+                        if (amount === null) {
+                            return;
+                        }
+
                         amount = parseFloat(amount);
 
                         if (isNaN(amount)) {
@@ -315,6 +351,7 @@ document.addEventListener("DOMContentLoaded", e => {
                     }
 
                     if (e.target.classList.contains("edit")) {
+                        let income = template.amount < 0;
                         /**
                          * @type {Template}
                          */
@@ -337,14 +374,14 @@ document.addEventListener("DOMContentLoaded", e => {
                                                 let end = children.find(i => i.name === "end").value;
 
                                                 let result = {
-                                                    id: record.id,
-                                                    created: record.created,
+                                                    id: template.id,
+                                                    created: template.created,
                                                     name: children.find(i => i.name === "name").value,
-                                                    amount: parseFloat(children.find(i => i.name === "cost").value),
+                                                    amount: parseFloat(children.find(i => i.name === "cost").value) * (income ? -1 : 1),
                                                     startDate: start === "" ? null : new Date(start + "-01"),
                                                     endDate: end === "" ? null : new Date(end + "-01"),
                                                     recurrence: parseInt(children.find(i => i.name === "recurrency").value),
-                                                    partial: children.find(i => i.name === "partial").checked
+                                                    partial: income ? false : children.find(i => i.name === "partial").checked
                                                 };
 
                                                 if (result.name + "" === "") {
@@ -353,7 +390,7 @@ document.addEventListener("DOMContentLoaded", e => {
                                                 }
 
                                                 if (isNaN(result.amount) || result.amount === 0.0) {
-                                                    await dialogs.alert("Please provide a {0}.", engine.translate("Cost"));
+                                                    await dialogs.alert("Please provide a {0}.", income ? engine.translate("Value") : engine.translate("Cost"));
                                                     return;
                                                 }
 
@@ -382,7 +419,7 @@ document.addEventListener("DOMContentLoaded", e => {
                                             { node: "label", text: engine.translate("Name"), },
                                             { node: "input", name: "name", value: template.name },
                                             { node: "br" },
-                                            { node: "label", text: engine.translate("Cost") },
+                                            { node: "label", text: engine.translate("Cost"), class: "cost-label" },
                                             { node: "input", name: "cost", type: "number", step: "0.01", min: "0", value: template.amount },
                                             { node: "br" },
                                             { node: "label", text: engine.translate("Start Date") },
@@ -403,8 +440,8 @@ document.addEventListener("DOMContentLoaded", e => {
                                                 value: template.recurrence
                                             },
                                             { node: "br" },
-                                            { node: "label", text: engine.translate("Partial Payments") },
-                                            { node: "input", name: "partial", type: "checkbox", checked: template.partial },
+                                            { node: "label", text: engine.translate("Partial Payments"),  },
+                                            { node: "input", name: "partial", type: "checkbox" },
                                             { node: "br" },
                                             { node: "input", type: "submit", value: engine.translate('Save') },
                                             { node: "input", type: "reset", value: engine.translate('Cancel') },
@@ -428,6 +465,26 @@ document.addEventListener("DOMContentLoaded", e => {
                                     }
                                 ]
                             });
+
+                            if (template.partial) {
+                                dialog.querySelector('[name="partial"]').checked = true;
+                            }
+
+                            if (income) {
+                                dialog.querySelector('h3').innerHTML = engine.translate("Edit Income");
+                                dialog.querySelector('.cost-label').innerHTML = engine.translate("Value");
+                                dialog.querySelector('[name="cost"]').value = template.amount * -1;
+
+                                let partial = dialog.querySelector('[name="partial"]'),
+                                    elements = Array.from(partial.parentElement.children),
+                                    index = elements.indexOf(partial),
+                                    label = elements[index - 1],
+                                    br = elements[index + 1];
+
+                                partial.parentElement.removeChild(label);
+                                partial.parentElement.removeChild(br);
+                                partial.parentElement.removeChild(partial);
+                            }
 
                             document.body.append(dialog);
                             dialog.showModal();
@@ -505,7 +562,8 @@ document.addEventListener("DOMContentLoaded", e => {
         }
     }));
 
-    document.getElementById('schedule-bill').addEventListener('click', async e => {
+    document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('click', async e => {
+        let income = e.target.classList.contains("income");
         let template = await new Promise(resolve => {
             let dialog = elementTemplate({
                 node: "dialog",
@@ -530,7 +588,7 @@ document.addEventListener("DOMContentLoaded", e => {
                                     startDate: start === "" ? null : new Date(start + "-01"),
                                     endDate: end === "" ? null : new Date(end + "-01"),
                                     recurrence: parseInt(children.find(i => i.name === "recurrency").value),
-                                    partial: children.find(i => i.name === "partial").checked
+                                    partial: income ? false : children.find(i => i.name === "partial").checked
                                 };
 
                                 if (result.name + "" === "") {
@@ -539,8 +597,12 @@ document.addEventListener("DOMContentLoaded", e => {
                                 }
 
                                 if (isNaN(result.amount) || result.amount === 0.0) {
-                                    await dialogs.alert("Please provide a {0}.", engine.translate("Cost"));
+                                    await dialogs.alert("Please provide a {0}.", income ? engine.translate("Cost") : engine.translate("Value"));
                                     return;
+                                }
+
+                                if (income) {
+                                    result.amount = result.amount * -1;
                                 }
 
                                 if (result.startDate !== null && result.endDate !== null && result.startDate > result.endDate) {
@@ -567,11 +629,11 @@ document.addEventListener("DOMContentLoaded", e => {
                             { node: "label", text: engine.translate("Name") },
                             { node: "input", name: "name" },
                             { node: "br" },
-                            { node: "label", text: engine.translate("Cost") },
+                            { node: "label", text: engine.translate("Cost"), class: "cost-label" },
                             { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
                             { node: "br" },
                             { node: "label", text: engine.translate("Start Date") },
-                            { node: "input", name: "start", type: "month" },
+                            { node: "input", name: "start", type: "month", value: document.getElementById('month').value },
                             { node: "br" },
                             { node: "label", text: engine.translate("End Date") },
                             { node: "input", name: "end", type: "month" },
@@ -597,6 +659,21 @@ document.addEventListener("DOMContentLoaded", e => {
                 ]
             });
 
+            if (income) {
+                dialog.querySelector('h3').innerHTML = engine.translate("Schedule Income");
+                dialog.querySelector('.cost-label').innerHTML = engine.translate("Value");
+
+                let partial = dialog.querySelector('[name="partial"]'),
+                    elements = Array.from(partial.parentElement.children),
+                    index = elements.indexOf(partial),
+                    label = elements[index - 1],
+                    br = elements[index + 1];
+
+                partial.parentElement.removeChild(label);
+                partial.parentElement.removeChild(br);
+                partial.parentElement.removeChild(partial);
+            }
+
             document.body.appendChild(dialog);
             dialog.showModal();
         });
@@ -604,7 +681,7 @@ document.addEventListener("DOMContentLoaded", e => {
         if (template instanceof Template) {
             engine.addOrUpdateTemplate(template);
         }
-    });
+    }));
 
     document.querySelectorAll("#tab-picker a").forEach(e => e.addEventListener("click", e => {
         e.preventDefault();

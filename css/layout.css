@@ -11,3 +11,15 @@ body {
 body.loading {
     opacity: 0;
 }
+
+main tbody tr.ignored {
+    color: rgba(0, 0, 0, 0.4)
+}
+
+main tbody tr.partial {
+    background: rgba(189, 192, 13, 0.4)
+}
+
+main tbody tr.excessive {
+    background: rgba(199, 47, 9, 0.4)
+}

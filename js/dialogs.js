@@ -112,18 +112,34 @@ class DialogManager {
      * @returns {Promise<String>}
      */
     async prompt(message, ...parameters) {
-        let type = "text";
-        let autocomplete = "";
+        let props = { type: "text"} ;
         if (typeof message === "object") {
             if (typeof message.text !== "string") {
                 throw Error("message isn't a valid PromptOptions object");
             }
 
             if (typeof message.type === "string") {
-                type = message.type;
-                if (type === "password") {
-                    autocomplete = "new-password";
+                props.type = message.type;
+                switch (props.type) {
+                    case "password":
+                        props.autocomplete = "new-password";
+                        break;
+                    case "number":
+                        if (message.step !== undefined) {
+                            props.step = message.step;
+                        }
+                        if (message.min !== undefined) {
+                            props.min = message.min;
+                        }
+                        if (message.max !== undefined) {
+                            props.max = message.max;
+                        }
+                        break;
                 }
+            }
+
+            if (message.value !== undefined) {
+                props.value = message.value;
             }
 
             if (Array.isArray(message.parameters)) {
@@ -156,14 +172,20 @@ class DialogManager {
                         },
                         children: [
                             { node: "label", text: this[translate].translate(message, ...parameters) },
-                            { node: "input", type: type, name: "value", autocomplete: autocomplete },
+                            { node: "input", name: "value" },
                             { node: "br" },
                             { node: "input", type: "submit", value: this[translate].translate('Okay') },
                             { node: "input", type: "reset", value: this[translate].translate('Cancel') }
                         ]
                     }
                 ]
-            })
+            });
+
+            var input = dialog.querySelector('[name="value"]');
+
+            for(var p in props) {
+                input[p] = props[p];
+            }
 
             document.body.appendChild(dialog);
             dialog.showModal();
@@ -208,7 +230,7 @@ class DialogManager {
             });
 
             document.body.appendChild(dialog);
-            dialog.setAttribute('open', '');
+            dialog.showModal();
         });
     }
 }

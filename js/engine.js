@@ -68,7 +68,7 @@ class PaymentEngine extends ITranslate {
                         if (!paid) {
                             this[internal].remaining += Math.max(0, t.amount - total);
                         }
-                    } else if (payments.find(p => p.templateId === t.id) === undefined) {
+                    } else if (payments.find(p => p.templateId.equalTo(t.id)) === undefined) {
                         this[internal].remaining += t.amount;
                     }
                 });
@@ -233,7 +233,7 @@ class PaymentEngine extends ITranslate {
      * @param {Template} template
      */
     addOrUpdateTemplate(template){
-        this[internal].storage.updateTemplate(template);
+        this[internal].storage.updateTemplate(template, this.month);
         this[save]();
     }
 
@@ -344,6 +344,28 @@ class PaymentEngine extends ITranslate {
 
         if (this[internal].storage.currency !== value) {
             this[internal].storage.currency = value;
+            this[save]();
+        }
+    }
+
+    /**
+     * @returns {Number}
+     */
+    get excessive() {
+        return this[internal].storage.excessive;
+    }
+
+    set excessive(value) {
+        if(isNaN(value)) {
+            throw new TypeError("value is not a number");
+        }
+
+        if (value < 0) {
+            throw new RangeError("value is less than zero");
+        }
+
+        if (this[internal].storage.excessive !== value) {
+            this[internal].storage.excessive = value;
             this[save]();
         }
     }

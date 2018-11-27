@@ -18,6 +18,7 @@ class MoneyStorage {
             templates: [],
             locale: "en-GB",
             currency: "EUR",
+            excessive: 0,
             date: new Date()
         };
 
@@ -66,6 +67,10 @@ class MoneyStorage {
         if (typeof(storage.currency) === "string" && storage.currency.length === 3) {
             this[internal].currency = storage.currency;
         }
+
+        if (!isNaN(storage.excessive)) {
+            this[internal].excessive = Math.max(storage.excessive, 0);
+        }
     }
 
     get date() {
@@ -102,6 +107,22 @@ class MoneyStorage {
         } else {
             throw new TypeError("value must be a three-character string");
         }
+    }
+
+    get excessive() {
+        return this[internal].excessive;
+    }
+
+    set excessive(value) {
+        if(isNaN(value)) {
+            throw new TypeError("value is not a number");
+        }
+
+        if (value < 0) {
+            throw new RangeError("value is less than zero");
+        }
+
+        this[internal].excessive = value;
     }
 
     /**
@@ -223,8 +244,9 @@ class MoneyStorage {
      * Stored changed template in the dataset, adding if it doesn't already exist.
      *
      * @param {Template} template
+     * @param {?Date} month
      */
-    updateTemplate(template) {
+    updateTemplate(template, month) {
         if (template instanceof Template){
             /**
              * @type {Template}
@@ -233,13 +255,33 @@ class MoneyStorage {
             if (current === undefined) {
                 this[internal].templates.push(template);
             } else {
-                current.amount = template.amount;
-                current.benefactor = template.benefactor;
-                current.endDate = template.endDate;
-                current.name = template.name;
-                current.partial = template.partial;
-                current.recurrence = template.recurrence;
-                current.startDate = template.startDate;
+                if (current.amount === template.amount
+                    && current.partial === template.partial
+                    && current.recurrence === template.recurrence) {
+                    current.benefactor = template.benefactor;
+                    current.endDate = template.endDate;
+                    current.name = template.name;
+                    current.partial = template.partial;
+                    current.recurrence = template.recurrence;
+                    current.startDate = template.startDate;
+                } else {
+                    let record = new Template({
+                        name: template.name,
+                        benefactor: template.benefactor,
+                        amount: template.amount,
+                        partial: template.partial,
+                        startDate: month,
+                        endDate: template.month,
+                        recurrence: template.recurrence
+                    });
+
+                    this[internal].templates.push(record);
+                    if (this.payments.find(p => p.templateId.equalTo(current.id)) === undefined) {
+                        this.removeTemplate(current);
+                    } else {
+                        current.endDate = month;
+                    }
+                }
             }
         } else {
             throw new TypeError("template is not the correct type.");
@@ -280,7 +322,8 @@ class MoneyStorage {
             payments: this.payments,
             templates: this.templates,
             locale: this.locale,
-            currency: this.currency
+            currency: this.currency,
+            excessive: this.excessive
         }
     }
 }

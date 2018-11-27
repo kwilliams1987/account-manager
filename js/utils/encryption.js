@@ -103,7 +103,7 @@ class Encryption {
      */
     static async decrypt (password, encrypted) {
         let matches = algos.filter(a => {
-            for (let b = 0; b <= a.header.length; b++) {
+            for (let b = 0; b < a.header.length; b++) {
                 if (encrypted[b] !== a.header[b]) {
                     return false;
                 }
