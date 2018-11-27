@@ -20,6 +20,8 @@ Features:
   * All done on the client side using Javascript `crypto.subtle` package.
   
 To-do:
+* Styling
+  * Fully responsive for mobile.
 * Service worker.
   * Implement Progressive Web App standard.
     * Trivial since there is no network activity anyway.
