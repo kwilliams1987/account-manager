@@ -4,6 +4,7 @@ if (localStorage === undefined)
     throw new Error("Local Storage is not supported.");
 
 import { Guid } from "./utils/guid.js";
+import { Encryption } from "./utils/encryption.js";
 import { Template } from "./model/template.js";
 import { Payment } from "./model/payment.js";
 import { MoneyStorage } from "./storage.js";
@@ -39,40 +40,6 @@ class PaymentEngine extends ITranslate {
                         this[internal].onchange.forEach(h => h({ caller: this }));
                         return;
                 }
-            },
-            /**
-             * Get default encryption parameters.
-             *
-             * @returns {AesGcmParams}
-             * @param {?Uint8Array} iv
-             */
-            getAlgorthm(iv) {
-                if (iv === undefined) {
-                    iv = crypto.getRandomValues(new Uint8Array(16));
-                }
-
-                return {
-                    name: 'AES-GCM',
-                    length: 256,
-                    iv: iv
-                };
-            },
-            generateKey: async (password) => {
-                if (!exportable)
-                    throw new Error(this.translate("Your browser doesn't support encryption"));
-
-                if (typeof password !== "string" || password.length < 6)
-                    throw new TypeError(this.translate("Password must be at least {0} characters.", 6));
-
-                var encoder = new TextEncoder();
-                var algo = {
-                    name: 'PBKDF2',
-                    hash: 'SHA-256',
-                    salt: encoder.encode("AiAIOsdAAasf"),
-                    iterations: 1000
-                };
-                let key = await crypto.subtle.importKey('raw', encoder.encode(password), { name: 'PBKDF2'}, false, ['deriveKey']);
-                return crypto.subtle.deriveKey(algo, key, this[internal].getAlgorthm(), false, ['encrypt', 'decrypt']);
             }
         };
 
@@ -413,16 +380,13 @@ class PaymentEngine extends ITranslate {
      * @throws {TypeError} if the password isn't a string or is too weak.
      */
     async export(password) {
-        let key = await this[internal].generateKey(password),
-            algo = await this[internal].getAlgorthm(),
-            encoder = new TextEncoder();
+        if (!exportable)
+            throw new Error(this.translate("Your browser doesn't support encryption"));
 
-        let encrypted = new Uint8Array(await crypto.subtle.encrypt(algo, key, encoder.encode(JSON.stringify(this[internal].storage))));
-        let output = new Uint8Array(algo.iv.length + encrypted.length);
-        output.set(algo.iv);
-        output.set(encrypted, algo.iv.length);
+        if (typeof password !== "string" || password.length < 6)
+            throw new TypeError(this.translate("Password must be at least {0} characters.", 6));
 
-        return output;
+        return await Encryption.encrypt(password, JSON.stringify(this[internal].storage));
     }
 
     /**
@@ -434,14 +398,13 @@ class PaymentEngine extends ITranslate {
      * @throws {Error} if encryption isn't supported.
      */
     async import(password, encrypted) {
-        let iv = encrypted.subarray(0, 16),
-            key = await this[internal].generateKey(password),
-            algo = this[internal].getAlgorthm(iv);
+       if (!exportable)
+           throw new Error(this.translate("Your browser doesn't support encryption"));
 
-        encrypted = encrypted.subarray(16);
+       if (typeof password !== "string" || password.length < 6)
+           throw new TypeError(this.translate("Password must be at least {0} characters.", 6));
 
-        let output = await crypto.subtle.decrypt(algo, key, encrypted),
-            result = new TextDecoder().decode(output);
+        let result = await Encryption.decrypt(password, encrypted);
 
         JSON.parse(result);
 
