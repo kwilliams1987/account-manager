@@ -1,3 +1,7 @@
+body, html {
+    width: 100%;
+}
+
 body {
     opacity: 1;
 
@@ -12,6 +16,44 @@ body.loading {
     opacity: 0;
 }
 
+input, select {
+    padding: 3px;
+}
+
+aside {
+    line-height: 1.75em
+}
+
+aside label {
+    display: inline-block;
+    margin-bottom: 2px;
+    width: 40%;
+}
+
+aside input {
+    display: inline-block;
+    width: 30%;
+}
+
+main table {
+    width: 100%;
+    padding: 0;
+    border-spacing: 0;
+}
+
+main table th, main table td {
+    padding: 4px
+}
+
+main table tbody td:first-child {
+    font-weight: bolder;
+}
+
+main table td:last-child {
+    text-align: right;
+    white-space: nowrap;
+}
+
 main tbody tr.ignored {
     color: rgba(0, 0, 0, 0.4)
 }
@@ -22,4 +64,49 @@ main tbody tr.partial {
 
 main tbody tr.excessive {
     background: rgba(199, 47, 9, 0.4)
+}
+
+main, aside, menu, footer {
+    max-width: 800px;
+    width: 90%;
+    margin: 0 auto;
+}
+
+menu {
+    line-height: 45px;
+}
+
+menu a, menu a:visited, menu a:active {
+    color: black;
+}
+
+dialog {
+    line-height: 1.75em
+}
+
+dialog label, dialog input, dialog select {
+    display: inline-block;
+    width: 100%
+}
+
+dialog input[type="submit"], dialog input[type="reset"] {
+    width: 50%
+}
+
+#tab-settings {
+    line-height: 1.6em;
+}
+
+#tab-settings label {
+    display: inline-block;
+    width: 45%;
+}
+
+#tab-settings input, #tab-settings select {
+    display: inline-block;
+    width: 45%;
+}
+
+[hidden] {
+    display: none !important;
 }

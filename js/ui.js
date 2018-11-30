@@ -4,6 +4,7 @@ import { PaymentEngine } from './engine.js';
 import { elementTemplate, DialogManager } from './dialogs.js';
 import { Template } from './model/template.js';
 import { Recurrence } from './model/recurrence.js';
+import { Guid } from './utils/guid.js';
 
 HTMLElement.prototype.clearChildren = function() {
     while(this.firstChild) {
@@ -59,33 +60,72 @@ const handler = async e => {
         let templates = values[1];
         let excessMod = 1 + (e.caller.excessive / 100);
 
-        templates.forEach(t => {
-            let cost = t.getCost(payments);
-            let excessive = cost > t.amount * excessMod;
-            let isPaid = t.isPaid(payments);
-            let name = t.name;
+        let outputs = [];
 
-            if (t.benefactor !== null) {
-                name += ` <span class="benefactor">${t.benefactor}</span>`;
+        payments.filter(p => p.templateId.equalTo(Guid.empty)).forEach(p =>
+            outputs.push({
+                id: p.id,
+                name: p.name,
+                benefactor: null,
+                expected: 0,
+                actual: p.amount,
+                paid: true,
+                excessive: true,
+                partial: false
+
+        }));
+
+        templates.forEach(t => {
+            let r = {
+                id: t.id,
+                name: t.name,
+                benefactor: t.benefactor,
+                expected: t.amount,
+                actual: t.getCost(payments),
+                paid: t.isPaid(payments),
+                partial: t.partial
+            };
+
+            r.excessive = r.actual > r.expected * excessMod;
+
+            outputs.push(r);
+        });
+
+        outputs.sort((o1, o2) => {
+            if (o1.name == o2.name) return 0;
+            return o1.name > o2.name ? 1 : -1;
+         }).forEach(o => {
+            let cost = o.actual;
+            let amount = o.expected;
+            let excessive = o.excessive;
+            let isPaid = o.paid;
+            let name = o.name;
+
+            if (o.benefactor !== null) {
+                name += ` <span class="benefactor">${o.benefactor}</span>`;
             }
 
-            if (t.amount > 0) {
-                if (isPaid || (t.partial && cost !== 0)) {
+            if (amount > 0 || cost > 0) {
+                if (isPaid || (o.partial && cost !== 0)) {
                     let row = `
-                    <tr data-template-id="${t.id}">
+                    <tr data-template-id="${o.id}">
                         <td>${name}</td>
-                        <td>${e.caller.formatCurrency(t.amount)}</td>
+                        <td>${e.caller.formatCurrency(amount)}</td>
                         <td>${cost === 0 ? '' : e.caller.formatCurrency(cost)}</td>
                         <td>
-                            <button class="undo">${e.caller.translate("Undo")}</button>
+                            <button class="cancel">${e.caller.translate("Undo")}</button>
                         </td>
                     </tr>`.toHtml();
 
-                    if (t.partial) {
+                    if (o.amount === 0) {
+                        row.classList.add("unexpected");
+                    }
+
+                    if (o.partial) {
                         row.classList.add("partial");
                     }
 
-                    if (!t.partial && cost === 0) {
+                    if (!o.partial && cost === 0) {
                         row.classList.add("ignored");
                     }
 
@@ -97,12 +137,11 @@ const handler = async e => {
                 }
 
                 if (!isPaid) {
-                    let remaining = Math.max(0, t.amount - cost);
+                    let remaining = Math.max(0, amount - cost);
 
                     let row = `
-                    <tr data-template-id="${t.id}">
+                    <tr data-template-id="${o.id}">
                         <td>${name}</td>
-                        <td>${e.caller.formatCurrency(t.amount)}</td>
                         <td>${e.caller.formatCurrency(remaining)}</td>
                         <td>
                             <button class="pay">${e.caller.translate("Pay")}</button>
@@ -111,7 +150,7 @@ const handler = async e => {
                         </td>
                     </tr>`.toHtml();
 
-                    if (t.partial && cost !== 0) {
+                    if (o.partial && cost !== 0) {
                         row.classList.add("partial");
                     }
 
@@ -121,11 +160,11 @@ const handler = async e => {
 
                     pending.appendChild(row);
                 }
-            } else {
+            } else if (amount < 0 || o.cost < 0) {
                 let row = `
-                <tr data-template-id="${t.id}">
+                <tr data-template-id="${o.id}">
                     <td>${name}</td>
-                    <td>${e.caller.formatCurrency(t.amount * -1)}</td>
+                    <td>${amount === 0 ? '' : e.caller.formatCurrency(amount * -1)}</td>
                     <td>${isPaid ? e.caller.formatCurrency(cost * -1) : ''}</td>
                     <td>
                         <button class="edit">${e.caller.translate("Edit")}</button>
@@ -134,7 +173,11 @@ const handler = async e => {
                     </td>
                 </tr>`.toHtml();
 
-                if (cost > t.amount && isPaid) {
+                if (amount === 0) {
+                    row.classList.add("unexpected");
+                }
+
+                if (cost > amount && isPaid) {
                     row.classList.add("excessive");
                 }
 
@@ -153,7 +196,6 @@ const handler = async e => {
         if (paid.children.length === 0) {
             paid.appendChild(`<tr><td colspan="4" class="empty">${engine.translate("No paid bills!")}</td></tr>`.toHtml());
         }
-
     });
 
     document.getElementById('month').removeAttribute('disabled');
@@ -161,6 +203,8 @@ const handler = async e => {
     document.getElementById('locale').value = e.caller.locale;
     document.getElementById('currency').value = e.caller.currency;
     document.getElementById('excessive').value = e.caller.excessive;
+
+    document.body.classList.remove("loading");
     translate(e.caller);
 }
 
@@ -321,7 +365,7 @@ document.addEventListener("DOMContentLoaded", e => {
                             type: "number",
                             step: "0.01",
                             min: 0,
-                            value: template.amount * -1
+                            value: Math.abs(template.amount)
                         },
                             amount = await dialogs.prompt(options);
                         if (amount === null) {
@@ -495,8 +539,15 @@ document.addEventListener("DOMContentLoaded", e => {
                         }
                     }
 
-                    if (e.target.classList.contains("undo")) {
-                        var payments = await engine.getPayments().then(result => result.filter(p => p.templateId.equalTo(template.id)));
+                    if (e.target.classList.contains("cancel")) {
+                        let payments = [];
+                        if (template === undefined) {
+                            templateId = new Guid(templateId);
+                            payments = [await engine.getPayments().then(result => result.find(p => p.id.equalTo(templateId)))];
+                            template = { partial: false };
+                        } else {
+                            payments = await engine.getPayments().then(result => result.filter(p => p.templateId.equalTo(template.id)));
+                        }
                         if (template.partial && payments.length > 1) {
                             let dialog = elementTemplate({
                                 node: "dialog",
@@ -562,6 +613,68 @@ document.addEventListener("DOMContentLoaded", e => {
         }
     }));
 
+    document.querySelectorAll('button.unexpected').forEach(e => e.addEventListener('click', async e => {
+        let income = e.target.classList.contains("income");
+        await new Promise(resolve => {
+            let dialog = elementTemplate({
+                node: "dialog",
+                children: [
+                    { node: "h3", text: engine.translate("Unexpected Bill") },
+                    {
+                        node: "form",
+                        events: {
+                            submit: async e => {
+                                e.preventDefault();
+                                let name = e.target.querySelector('[name="name"]').value,
+                                    cost = e.target.querySelector('[name="cost"]').value;
+
+                                if (name + "" === "") {
+                                    await dialogs.alert("Please provide a {0}.", engine.translate("Name"));
+                                    return;
+                                }
+
+                                if (isNaN(cost) || cost === 0.0) {
+                                    await dialogs.alert("Please provide a {0}.", income ? engine.translate("Cost") : engine.translate("Value"));
+                                    return;
+                                }
+
+                                if (income) {
+                                    cost = cost * -1;
+                                }
+
+                                engine.addUnexpected(name, cost);
+                                e.target.closest('dialog').close();
+                                document.body.removeChild(e.target.closest('dialog'));
+                                resolve();
+                            },
+                            reset: async e => {
+                                e.target.closest('dialog').close();
+                                document.body.removeChild(e.target.closest('dialog'));
+                            }
+                        },
+                        children: [
+                            { node: "label", text: engine.translate("Name") },
+                            { node: "input", name: "name" },
+                            { node: "br" },
+                            { node: "label", text: engine.translate("Cost"), class: "cost-label" },
+                            { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
+                            { node: "br" },
+                            { node: "input", type: "submit", value: engine.translate('Save') },
+                            { node: "input", type: "reset", value: engine.translate('Cancel') }
+                        ]
+                    }
+                ]
+            });
+
+            if (income) {
+                dialog.querySelector('.cost-label').innerHTML = engine.translate("Value");
+            }
+
+            document.body.appendChild(dialog);
+            dialog.showModal();
+        });
+    }));
+
     document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('click', async e => {
         let income = e.target.classList.contains("income");
         let template = await new Promise(resolve => {
@@ -572,7 +685,7 @@ document.addEventListener("DOMContentLoaded", e => {
                     {
                         node: "form",
                         events: {
-                            'submit': async e => {
+                            submit: async e => {
                                 e.preventDefault();
 
                                 /**
@@ -700,6 +813,4 @@ document.addEventListener("DOMContentLoaded", e => {
     if (localStorage.eyeActiveTab !== undefined) {
         Array.from(document.querySelectorAll('#tab-picker a')).find(a => a.href.split('#')[1] === localStorage.eyeActiveTab).click();
     }
-
-    document.body.classList.remove("loading");
 });

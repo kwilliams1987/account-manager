@@ -34,7 +34,7 @@ if (crypto !== undefined && typeof crypto.getRandomValues === 'function') {
 
 class Guid {
     static get empty() {
-        return new Guid("00000000-0000-0000-000000000000");
+        return new Guid("00000000-0000-0000-0000-000000000000");
     }
 
     /**

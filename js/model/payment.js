@@ -17,7 +17,7 @@ class Payment {
     constructor(values, date = null, amount = 0, closePartial = false) {
         this[internal] = {
             id: new Guid(),
-            templateId: null,
+            templateId: Guid.empty,
             name: "",
             amount: 0,
             date: null,
@@ -43,7 +43,7 @@ class Payment {
 
             this[internal].templateId = Guid.empty;
             this[internal].name = values;
-            this[internal].amount = amount;
+            this[internal].amount = parseFloat(amount);
             this[internal].date = date;
         } else if (values instanceof Template) {
             if (isNaN(amount)) {
@@ -60,7 +60,7 @@ class Payment {
 
             this[internal].templateId = values.id;
             this[internal].name = values.name;
-            this[internal].amount = amount;
+            this[internal].amount = parseFloat(amount);
             this[internal].date = date;
 
             if (values.partial) {
@@ -70,7 +70,7 @@ class Payment {
             this[internal].id = new Guid(values.id);
             this[internal].templateId = new Guid(values.templateId);
             this[internal].name = values.name;
-            this[internal].amount = values.amount;
+            this[internal].amount = parseFloat(values.amount);
             if (values.date instanceof Date) {
                 this[internal].date = values.date;
             } else {

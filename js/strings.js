@@ -142,7 +142,10 @@ Strings[internal] = {
         "Data restored successfully (v{0}).": "Data restored successfully (v{0}).",
         "Backups": "Backups",
         "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.": "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.",
-        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it."
+        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.",
+        "Remaining Budget":  "Remaining Budget",
+        "Excess Payment Margin:": "Excess Payment Margin:",
+        "Value": "Value"
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -223,7 +226,10 @@ Strings[internal] = {
         "Data restored successfully (v{0}).": "Data restored successfully (v{0}).",
         "Backups": "Backups",
         "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.": "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.",
-        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it."
+        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.",
+        "Remaining Budget":  "Remaining Budget",
+        "Excess Payment Margin:": "Excess Payment Margin:",
+        "Value": "Value"
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -304,7 +310,10 @@ Strings[internal] = {
         "Data restored successfully (v{0}).": "Uw gegevens zijn succesvol hersteld (v{0}).",
         "Backups": "Back-ups",
         "All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.": "Alle back-ups zijn gecodeerd met 256-bits AES-GCM-codering. U moet een wachtwoord van minimaal 6 tekens opgeven.",
-        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Bewaar uw back-upwachtwoorden veilig, ze worden nergens opgeslagen en uw back-up is onbruikbaar zonder deze."
+        "Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.": "Bewaar uw back-upwachtwoorden veilig, ze worden nergens opgeslagen en uw back-up is onbruikbaar zonder deze.",
+        "Remaining Budget": "Resterende",
+        "Excess Payment Margin:": "Te veel betalingspercentage:",
+        "Value": "Valuta"
     },
 }
 
