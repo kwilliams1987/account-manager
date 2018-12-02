@@ -67,7 +67,7 @@ const handler = async e => {
                 id: p.id,
                 name: p.name,
                 benefactor: null,
-                expected: 0,
+                expected: null,
                 actual: p.amount,
                 paid: true,
                 excessive: true,
@@ -110,14 +110,14 @@ const handler = async e => {
                     let row = `
                     <tr data-template-id="${o.id}">
                         <td>${name}</td>
-                        <td>${e.caller.formatCurrency(amount)}</td>
+                        <td>${amount === null ? '' : e.caller.formatCurrency(amount)}</td>
                         <td>${cost === 0 ? '' : e.caller.formatCurrency(cost)}</td>
                         <td>
                             <button class="cancel">${e.caller.translate("Undo")}</button>
                         </td>
                     </tr>`.toHtml();
 
-                    if (o.amount === 0) {
+                    if (amount === null) {
                         row.classList.add("unexpected");
                     }
 
@@ -164,7 +164,7 @@ const handler = async e => {
                 let row = `
                 <tr data-template-id="${o.id}">
                     <td>${name}</td>
-                    <td>${amount === 0 ? '' : e.caller.formatCurrency(amount * -1)}</td>
+                    <td>${amount === null ? '' : e.caller.formatCurrency(amount * -1)}</td>
                     <td>${isPaid ? e.caller.formatCurrency(cost * -1) : ''}</td>
                     <td>
                         <button class="edit">${e.caller.translate("Edit")}</button>
@@ -173,7 +173,7 @@ const handler = async e => {
                     </td>
                 </tr>`.toHtml();
 
-                if (amount === 0) {
+                if (amount === null) {
                     row.classList.add("unexpected");
                 }
 
