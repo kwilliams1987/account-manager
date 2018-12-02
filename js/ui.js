@@ -365,7 +365,7 @@ document.addEventListener("DOMContentLoaded", e => {
                             type: "number",
                             step: "0.01",
                             min: 0,
-                            value: Math.abs(template.amount)
+                            value: template.partial ? '' : Math.abs(template.amount)
                         },
                             amount = await dialogs.prompt(options);
                         if (amount === null) {
