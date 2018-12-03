@@ -54,6 +54,10 @@ aside input {
     min-width: 160px;
 }
 
+aside input[readonly] {
+    border-color: transparent;
+}
+
 main table {
     width: 100%;
     padding: 0;
@@ -135,6 +139,10 @@ menu a:visited,
 menu a:active {
     color: black;
     padding: 5px 10px;
+}
+
+menu a.active {
+    text-decoration: none;
 }
 
 button,
@@ -300,9 +308,9 @@ dialog div.input-group span.before + input {
 }
 
 #now {
-    width: 2.5em;
+    width: 30px;
     margin: 0 0 0 5px;
-    line-height: 1.5em;
+    line-height: 22px;
     padding: 3px;
 }
 
