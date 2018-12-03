@@ -862,4 +862,7 @@ document.addEventListener("DOMContentLoaded", e => {
             }
         })();
     }
+
+    document.documentElement.classList.remove('unsupported');
+    document.body.removeChild(document.getElementById('unsupportedBrowser'));
 });

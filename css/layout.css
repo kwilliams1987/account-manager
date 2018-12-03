@@ -110,3 +110,15 @@ dialog input[type="submit"], dialog input[type="reset"] {
 [hidden] {
     display: none !important;
 }
+
+#unsupportedBrowser {
+    display: none;
+}
+
+.unsupported aside, .unsupported menu, .unsupported main, .unsupported hr {
+    display: none;
+}
+
+.unsupported #unsupportedBrowser {
+    display: block;
+}
