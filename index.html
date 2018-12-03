@@ -1,17 +1,25 @@
 <!doctype html>
-<html>
+<html class="unsupported">
     <head>
         <title class="translate">Eye on My.money</title>
         <link rel="stylesheet" href="css/layout.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+            if (localStorage !== undefined && localStorage.eyeActiveTab !== undefined) {
+                document.documentElement.classList.remove('unsupported');
+            }
+        </script>
     </head>
 
     <body>
         <aside>
-            <h1 class="translate">Eye on My Money</h1>
-            <label for="month" class="translate">Month</label> <input type="month" id="month"><button id="now">&#128338;</button><br>
-            <label for="expected" class="translate">Expected</label> <input type="text" id="expected" readonly><br>
-            <label for="paid" class="translate">Paid</label> <input type="text" id="paid" readonly><br>
-            <label for="remaining" class="translate">Remaining</label> <input type="text" id="remaining" readonly>
+            <div>
+                <h1 class="translate">Eye on My Money</h1>
+                <label for="month" class="translate">Month</label> <input type="month" id="month"><button id="now">&#128338;</button><br>
+                <label for="expected" class="translate">Expected</label> <input type="text" id="expected" readonly><br>
+                <label for="paid" class="translate">Paid</label> <input type="text" id="paid" readonly><br>
+                <label for="remaining" class="translate">Remaining</label> <input type="text" id="remaining" readonly>
+            </div>
         </aside>
 
         <menu id="tab-picker">
@@ -24,7 +32,7 @@
         <main>
             <section id="tab-pending">
                 <h2 class="translate">Pending Bills</h2>
-                <p>
+                <p class="controls">
                     <button class="schedule bill" class="translate">Schedule Bill</button>
                     <button class="unexpected bill" class="translate">Unexpected Bill</button>
                 </p>
@@ -44,7 +52,7 @@
 
             <section id="tab-income" hidden>
                 <h2 class="translate">Planned Income</h2>
-                <p>
+                <p class="controls">
                     <button class="schedule income" class="translate">Schedule Income</button>
                     <button class="unexpected income" class="translate">Unexpected Income</button>
                 </p>
@@ -65,7 +73,7 @@
 
             <section id="tab-paid" hidden>
                 <h2 class="translate">Paid Bills</h2>
-                <p>&nbsp;</p>
+                <p class="controls">&nbsp;</p>
                 <table>
                     <thead>
                         <tr>
@@ -83,22 +91,46 @@
             <section id="tab-settings" hidden>
                 <h2 class="translate">Settings</h2>
 
-                <label for="locale" class="translate">Language:</label> <select id="locale"></select><br>
-                <label for="currency" class="translate">Currency:</label> <select id="currency"></select><br>
-                <label for="excessive" class="translate">Excess Payment Margin:</label> <input id="excessive" type="number" step="1" min="0">%
+                <div class="input-group">
+                    <label for="locale" class="translate">Language:</label>
+                    <select id="locale"></select>
+                </div>
+
+                <div class="input-group">
+                    <label for="currency" class="translate">Currency:</label>
+                    <select id="currency"></select>
+                </div>
+                <div class="input-group">
+                    <label for="excessive" class="translate">Excess Payment Margin:</label>
+                    <input id="excessive" type="number" step="1" min="0">
+                    <span class="after">%</span>
+                </div>
                 <hr>
                 <h2 class="translate">Backups</h2>
                 <p class="translate">All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.</p>
                 <p class="translate">Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.</p>
-                <button id="export" class="translate">Create Backup</button>
-                <button id="import" class="translate">Restore Backup</button>
+                <p class="controls">
+                    <button id="export" class="translate">Create Backup</button>
+                    <button id="import" class="translate">Restore Backup</button>
+                </p>
                 <input type="file" id="backup" accept=".money" hidden>
             </section>
         </main>
 
-        <hr>
 
-        <footer>&copy; 2018 Kristian Williams</footer>
+        <section id="unsupportedBrowser">
+            <h1>Unsupported Browser</h1>
+            Unfortunately it appears that your browser is not supported.<br>
+            Please use a modern browser such as
+            <a href="https://www.google.com/chrome/" rel="nofollow">Google Chrome</a>,
+            <a href="https://www.microsoft.com/microsoft-edge" rel="nofollow">Microsoft Edge</a> or
+            <a href="https://www.mozilla.org/firefox" rel="nofollow">Mozilla Firefox</a>.
+        </section>
+
+        <footer>
+            <hr>
+            &copy; 2018 Kristian Williams
+        </footer>
 
         <script defer type="module" src="js/ui.js"></script>
     </body>

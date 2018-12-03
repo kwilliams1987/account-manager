@@ -349,6 +349,16 @@ class PaymentEngine extends ITranslate {
     }
 
     /**
+     * @return {String}
+     */
+    get currencySymbol() {
+        return new Intl.NumberFormat(this[internal].storage.locale, {
+            style: 'currency',
+            currency: this[internal].storage.currency
+        }).formatToParts().find(p => p.type === "currency").value;
+    }
+
+    /**
      * @returns {Number}
      */
     get excessive() {
