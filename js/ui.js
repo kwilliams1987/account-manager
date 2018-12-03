@@ -6,6 +6,44 @@ import { Template } from './model/template.js';
 import { Recurrence } from './model/recurrence.js';
 import { Guid } from './utils/guid.js';
 
+if ('HTMLDialogElement' in window) {
+    if (!('showModal' in HTMLDialogElement.prototype)) {
+        HTMLDialogElement.prototype.showModal = function () {
+            if (this.attributes.open !== undefined) {
+                throw new InvalidStateError("Dialog is already open.");
+            }
+
+            this.setAttribute('open', '');
+        }
+    }
+
+    if (!('close' in HTMLDialogElement.prototype)) {
+        HTMLDialogElement.prototype.close = function () {
+            if (this.attributes.open === undefined) {
+                throw new InvalidStateError("Dialog is already closed.");
+            }
+
+            this.removeAttribute('open');
+        }
+    }
+} else {
+    HTMLElement.prototype.showModal = function () {
+        if (this.attributes.open !== undefined) {
+            throw new InvalidStateError("Dialog is already open.");
+        }
+
+        this.setAttribute('open', '');
+    }
+
+    HTMLElement.prototype.close = function () {
+        if (this.attributes.open === undefined) {
+            throw new InvalidStateError("Dialog is already closed.");
+        }
+
+        this.removeAttribute('open');
+    }
+}
+
 HTMLElement.prototype.clearChildren = function() {
     while(this.firstChild) {
         this.removeChild(this.firstChild);

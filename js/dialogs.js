@@ -210,7 +210,7 @@ class DialogManager {
                         events: {
                             "click": e => {
                                 resolve(true);
-                                e.target.closest('dialog').removeAttribute('open');
+                                e.target.closest('dialog').close();
                                 document.body.removeChild(e.target.closest('dialog'));
                             }
                         }
@@ -221,7 +221,7 @@ class DialogManager {
                         events: {
                             "click": e => {
                                 resolve(false);
-                                e.target.closest('dialog').removeAttribute('open');
+                                e.target.closest('dialog').close();
                                 document.body.removeChild(e.target.closest('dialog'));
                             }
                         }
