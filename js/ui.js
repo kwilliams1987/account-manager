@@ -748,7 +748,7 @@ document.addEventListener("DOMContentLoaded", e => {
                                 children: [
                                     { node: "label", text: engine.translate("Cost"), class: "cost-label" },
                                     { node: "span", text: engine.currencySymbol, class: "before" },
-                                    { node: "input", name: "cost", type: "number", step: "0.01", min: "0", value: template.amount },
+                                    { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
                                     { node: "br" }
                                 ]
                             },
@@ -868,8 +868,13 @@ document.addEventListener("DOMContentLoaded", e => {
                                 }})
                             },
                             { node: "br" },
-                            { node: "label", text: engine.translate("Partial Payments") },
-                            { node: "input", name: "partial", type: "checkbox" },
+                            {
+                                node: "label",
+                                text: engine.translate("Partial Payments"),
+                                children: [
+                                    { node: "input", name: "partial", type: "checkbox" }
+                                ]
+                            },
                             { node: "br" },
                             {
                                 node: "div",

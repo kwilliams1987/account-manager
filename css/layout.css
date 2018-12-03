@@ -45,7 +45,7 @@ aside div {
 aside label {
     display: inline-block;
     margin-bottom: 2px;
-    width: 45%;
+    width: 53%;
 }
 
 aside input {
@@ -189,6 +189,7 @@ dialog div.controls {
     display: flex;
     justify-content: center;
     align-items: stretch;
+    margin-top: 5px;
 }
 
 dialog div.controls input[type="submit"],
@@ -286,6 +287,7 @@ div.input-group input + span.after {
 
 dialog div.input-group {
     height: 55px;
+    margin-bottom: 5px;
 }
 
 dialog div.input-group span.before + input {
@@ -302,6 +304,12 @@ dialog div.input-group span.before + input {
     margin: 0 0 0 5px;
     line-height: 1.5em;
     padding: 3px;
+}
+
+@media only screen and (max-width: 730px) {
+    aside label {
+        width: 45%;
+    }
 }
 
 @media only screen and (max-width: 450px) {
@@ -344,6 +352,26 @@ dialog div.input-group span.before + input {
         left: initial;
         top: 26px;
         width: 30px;
+    }
+}
+
+@media only screen and (max-width: 360px) {
+    .controls {
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+    }
+
+    .controls button {
+        width: 100%;
+        display: inline-flex;
+        flex-flow: row;
+        justify-content: center;
+        margin-right: 5px;
+    }
+
+    .controls button:last-child {
+        margin-right: none;
     }
 }
 

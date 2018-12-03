@@ -32,7 +32,7 @@
         <main>
             <section id="tab-pending">
                 <h2 class="translate">Pending Bills</h2>
-                <p>
+                <p class="controls">
                     <button class="schedule bill" class="translate">Schedule Bill</button>
                     <button class="unexpected bill" class="translate">Unexpected Bill</button>
                 </p>
@@ -52,7 +52,7 @@
 
             <section id="tab-income" hidden>
                 <h2 class="translate">Planned Income</h2>
-                <p>
+                <p class="controls">
                     <button class="schedule income" class="translate">Schedule Income</button>
                     <button class="unexpected income" class="translate">Unexpected Income</button>
                 </p>
@@ -73,7 +73,7 @@
 
             <section id="tab-paid" hidden>
                 <h2 class="translate">Paid Bills</h2>
-                <p>&nbsp;</p>
+                <p class="controls">&nbsp;</p>
                 <table>
                     <thead>
                         <tr>
@@ -109,8 +109,10 @@
                 <h2 class="translate">Backups</h2>
                 <p class="translate">All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.</p>
                 <p class="translate">Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.</p>
-                <button id="export" class="translate">Create Backup</button>
-                <button id="import" class="translate">Restore Backup</button>
+                <p class="controls">
+                    <button id="export" class="translate">Create Backup</button>
+                    <button id="import" class="translate">Restore Backup</button>
+                </p>
                 <input type="file" id="backup" accept=".money" hidden>
             </section>
         </main>
