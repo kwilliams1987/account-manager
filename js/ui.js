@@ -851,4 +851,7 @@ document.addEventListener("DOMContentLoaded", e => {
     if (localStorage.eyeActiveTab !== undefined) {
         Array.from(document.querySelectorAll('#tab-picker a')).find(a => a.href.split('#')[1] === localStorage.eyeActiveTab).click();
     }
+
+    document.documentElement.classList.remove('unsupported');
+    document.body.removeChild(document.getElementById('unsupportedBrowser'));
 });

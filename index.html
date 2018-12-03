@@ -1,8 +1,13 @@
 <!doctype html>
-<html>
+<html class="unsupported">
     <head>
         <title class="translate">Eye on My.money</title>
         <link rel="stylesheet" href="css/layout.css">
+        <script>
+            if (localStorage !== undefined && localStorage.eyeActiveTab !== undefined) {
+                document.documentElement.classList.remove('unsupported');
+            }
+        </script>
     </head>
 
     <body>
@@ -97,6 +102,15 @@
         </main>
 
         <hr>
+
+        <section id="unsupportedBrowser">
+            <h1>Unsupported Browser</h1>
+            Unfortunately it appears that your browser is not supported.<br>
+            Please use a modern browser such as
+            <a href="https://www.google.com/chrome/" rel="nofollow">Google Chrome</a>,
+            <a href="https://www.microsoft.com/microsoft-edge" rel="nofollow">Microsoft Edge</a> or
+            <a href="https://www.mozilla.org/firefox" rel="nofollow">Mozilla Firefox</a>.
+        </section>
 
         <footer>&copy; 2018 Kristian Williams</footer>
 
