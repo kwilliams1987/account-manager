@@ -813,4 +813,15 @@ document.addEventListener("DOMContentLoaded", e => {
     if (localStorage.eyeActiveTab !== undefined) {
         Array.from(document.querySelectorAll('#tab-picker a')).find(a => a.href.split('#')[1] === localStorage.eyeActiveTab).click();
     }
+
+    if ('serviceWorker' in navigator) {
+        (async () => {
+            try {
+                let worker = await navigator.serviceWorker.register('/service.js')
+                console.log(worker.scope);
+            } catch (error) {
+                console.error(error);
+            }
+        })();
+    }
 });
