@@ -147,7 +147,9 @@ Strings[internal] = {
         "Excess Payment Margin:": "Excessive Payments:",
         "Value": "Value",
         "Please enter a date in the format: YYYY-MM.": "Please enter a date in the format: YYYY-MM.",
-        "Password must be at least {0} characters.": "Password must be at least {0} characters."
+        "Password must be at least {0} characters.": "Password must be at least {0} characters.",
+        "Please provide a filename:": "Please provide a filename:",
+        "Please provide a valid backup name.": "Please provide a valid backup name."
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -233,7 +235,9 @@ Strings[internal] = {
         "Excess Payment Margin:": "Excessive Payments:",
         "Value": "Value",
         "Please enter a date in the format: YYYY-MM.": "Please enter a date in the format: YYYY-MM.",
-        "Password must be at least {0} characters.": "Password must be at least {0} characters."
+        "Password must be at least {0} characters.": "Password must be at least {0} characters.",
+        "Please provide a filename:": "Please provide a filename:",
+        "Please provide a valid backup name.": "Please provide a valid backup name."
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -319,7 +323,9 @@ Strings[internal] = {
         "Excess Payment Margin:": "Te veel betalingspercentage:",
         "Value": "Valuta",
         "Please enter a date in the format: YYYY-MM.": "Voer een datum in met het volgende formaat: JJJJ-MM.",
-        "Password must be at least {0} characters.": "Wachtwoord moet ten minste {0} tekens bevatten."
+        "Password must be at least {0} characters.": "Wachtwoord moet ten minste {0} tekens bevatten.",
+        "Please provide a filename:": "Kies en bestandsnaam:",
+        "Please provide a valid backup name.": "Dit is geen geldige bestandsnaam"
     },
 }
 

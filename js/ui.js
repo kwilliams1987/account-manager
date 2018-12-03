@@ -395,6 +395,17 @@ document.getElementById('export').addEventListener('click', async e => {
     e.preventDefault();
 
     try {
+        let date = new Date(Date.now());
+        let filename = await dialogs.prompt({ text: "Please provide a filename:", value: `backup-${date.getFullYear()}-${date.getMonth() < 9 ? "0" : ""}${date.getMonth() + 1}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}` })
+        if (filename === null) {
+            return;
+        }
+
+        if (filename.length === 0) {
+            await dialogs.alert("Please provide a valid backup name.");
+            return;
+        }
+
         let password = await dialogs.prompt({ text: "Please provide a password:", type: "password"});
 
         if (password === null) {
@@ -402,12 +413,11 @@ document.getElementById('export').addEventListener('click', async e => {
         }
 
         let encrypted = await engine.export(password),
-            date = new Date(Date.now()),
             blob = new Blob([encrypted], { type: "binary/octet-stream" });
 
         let link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
-            link.download = `backup-${date.getFullYear()}-${date.getMonth() < 9 ? "0" : ""}${date.getMonth() + 1}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}.money`;
+            link.download = filename + ".money";
 
         document.body.appendChild(link);
         link.click();
