@@ -3,6 +3,7 @@
     <head>
         <title class="translate">Eye on My.money</title>
         <link rel="stylesheet" href="css/layout.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script>
             if (localStorage !== undefined && localStorage.eyeActiveTab !== undefined) {
                 document.documentElement.classList.remove('unsupported');
@@ -12,11 +13,13 @@
 
     <body>
         <aside>
-            <h1 class="translate">Eye on My Money</h1>
-            <label for="month" class="translate">Month</label> <input type="month" id="month"><button id="now">&#128338;</button><br>
-            <label for="expected" class="translate">Expected</label> <input type="text" id="expected" readonly><br>
-            <label for="paid" class="translate">Paid</label> <input type="text" id="paid" readonly><br>
-            <label for="remaining" class="translate">Remaining</label> <input type="text" id="remaining" readonly>
+            <div>
+                <h1 class="translate">Eye on My Money</h1>
+                <label for="month" class="translate">Month</label> <input type="month" id="month"><button id="now">&#128338;</button><br>
+                <label for="expected" class="translate">Expected</label> <input type="text" id="expected" readonly><br>
+                <label for="paid" class="translate">Paid</label> <input type="text" id="paid" readonly><br>
+                <label for="remaining" class="translate">Remaining</label> <input type="text" id="remaining" readonly>
+            </div>
         </aside>
 
         <menu id="tab-picker">
@@ -88,9 +91,20 @@
             <section id="tab-settings" hidden>
                 <h2 class="translate">Settings</h2>
 
-                <label for="locale" class="translate">Language:</label> <select id="locale"></select><br>
-                <label for="currency" class="translate">Currency:</label> <select id="currency"></select><br>
-                <label for="excessive" class="translate">Excess Payment Margin:</label> <input id="excessive" type="number" step="1" min="0">%
+                <div class="input-group">
+                    <label for="locale" class="translate">Language:</label>
+                    <select id="locale"></select>
+                </div>
+
+                <div class="input-group">
+                    <label for="currency" class="translate">Currency:</label>
+                    <select id="currency"></select>
+                </div>
+                <div class="input-group">
+                    <label for="excessive" class="translate">Excess Payment Margin:</label>
+                    <input id="excessive" type="number" step="1" min="0">
+                    <span class="after">%</span>
+                </div>
                 <hr>
                 <h2 class="translate">Backups</h2>
                 <p class="translate">All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.</p>
@@ -101,7 +115,6 @@
             </section>
         </main>
 
-        <hr>
 
         <section id="unsupportedBrowser">
             <h1>Unsupported Browser</h1>
@@ -112,7 +125,10 @@
             <a href="https://www.mozilla.org/firefox" rel="nofollow">Mozilla Firefox</a>.
         </section>
 
-        <footer>&copy; 2018 Kristian Williams</footer>
+        <footer>
+            <hr>
+            &copy; 2018 Kristian Williams
+        </footer>
 
         <script defer type="module" src="js/ui.js"></script>
     </body>

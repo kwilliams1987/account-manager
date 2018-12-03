@@ -270,11 +270,35 @@ document.addEventListener("DOMContentLoaded", e => {
     engine.addEventListener('change', handler);
 
     document.getElementById('month').value = engine.month.toMonthString();
-    document.getElementById('month').addEventListener('change', e => {
+    document.getElementById('month').addEventListener('change', async e => {
+        let value = e.target.value;
+        let components = value.split('-');
+
+        if (components.length !== 2) {
+            await dialogs.alert('Please enter a date in the format: YYYY-MM.');
+            e.target.focus();
+            return;
+        }
+
+        let year = components[0],
+            month = components[1];
+
+        if (!/^[1-9][0-9]{3}$/.test(year)) {
+            await dialogs.alert('Please enter a date in the format: YYYY-MM.');
+            e.target.focus();
+            return;
+        }
+
+        if (!/^[0-1][0-9]$/.test(month) || parseInt(month) > 12) {
+            await dialogs.alert('Please enter a date in the format: YYYY-MM.');
+            e.target.focus();
+            return;
+        }
+
         e.target.setAttribute('disabled', '');
         document.getElementById('now').setAttribute('disabled', '');
 
-        engine.month = new Date(e.target.value + "-01")
+        engine.month = new Date(value + "-01")
     });
 
     let locales = document.getElementById("locale");
@@ -501,9 +525,16 @@ document.addEventListener("DOMContentLoaded", e => {
                                             { node: "label", text: engine.translate("Name"), },
                                             { node: "input", name: "name", value: template.name },
                                             { node: "br" },
-                                            { node: "label", text: engine.translate("Cost"), class: "cost-label" },
-                                            { node: "input", name: "cost", type: "number", step: "0.01", min: "0", value: template.amount },
-                                            { node: "br" },
+                                            {
+                                                node: "div",
+                                                class: "input-group",
+                                                children: [
+                                                    { node: "label", text: engine.translate("Cost"), class: "cost-label" },
+                                                    { node: "span", text: engine.currencySymbol, class: "before" },
+                                                    { node: "input", name: "cost", type: "number", step: "0.01", min: "0", value: template.amount },
+                                                    { node: "br" }
+                                                ]
+                                            },
                                             { node: "label", text: engine.translate("Start Date") },
                                             { node: "input", name: "start", type: "month", value: template.startDate ? template.startDate.toMonthString() : "" },
                                             { node: "br" },
@@ -522,26 +553,37 @@ document.addEventListener("DOMContentLoaded", e => {
                                                 value: template.recurrence
                                             },
                                             { node: "br" },
-                                            { node: "label", text: engine.translate("Partial Payments"),  },
-                                            { node: "input", name: "partial", type: "checkbox" },
-                                            { node: "br" },
-                                            { node: "input", type: "submit", value: engine.translate('Save') },
-                                            { node: "input", type: "reset", value: engine.translate('Cancel') },
                                             {
-                                                node: "button",
-                                                text: engine.translate("Delete"),
-                                                events: {
-                                                    click: async e => {
-                                                        e.preventDefault();
-                                                        e.target.closest('dialog').close();
-                                                        document.body.removeChild(e.target.closest('dialog'));
+                                                node: "label",
+                                                text: engine.translate("Partial Payments"),
+                                                children: [
+                                                    { node: "input", name: "partial", type: "checkbox" }
+                                                ]
+                                            },
+                                            { node: "br" },
+                                            {
+                                                node: "div",
+                                                class: "controls",
+                                                children: [
+                                                    { node: "input", type: "submit", value: engine.translate('Save') },
+                                                    { node: "input", type: "reset", value: engine.translate('Cancel') },
+                                                    {
+                                                        node: "button",
+                                                        text: engine.translate("Delete"),
+                                                        events: {
+                                                            click: async e => {
+                                                                e.preventDefault();
+                                                                e.target.closest('dialog').close();
+                                                                document.body.removeChild(e.target.closest('dialog'));
 
-                                                        if (await dialogs.confirm("Are you sure you want to delete {0} and all it's payment history?", template.name)) {
-                                                            engine.deleteTemplate(template);
-                                                            resolve(null);
+                                                                if (await dialogs.confirm("Are you sure you want to delete {0} and all it's payment history?", template.name)) {
+                                                                    engine.deleteTemplate(template);
+                                                                    resolve(null);
+                                                                }
+                                                            }
                                                         }
                                                     }
-                                                }
+                                                ]
                                             }
                                         ]
                                     }
@@ -619,22 +661,28 @@ document.addEventListener("DOMContentLoaded", e => {
                                             },
                                             { node: "br" },
                                             {
-                                                node: "button",
-                                                text: engine.translate("Re-open"),
-                                                events: {
-                                                    click: async e => {
-                                                        e.preventDefault();
-                                                        let payment = payments.find(p => p.closePartial);
-                                                        if (payment !== undefined) {
-                                                            payment.closePartial = false;
-                                                            await engine.addPayment(payment);
+                                                node: "div",
+                                                class: "controls",
+                                                children: [
+                                                    {
+                                                        node: "button",
+                                                        text: engine.translate("Re-open"),
+                                                        events: {
+                                                            click: async e => {
+                                                                e.preventDefault();
+                                                                let payment = payments.find(p => p.closePartial);
+                                                                if (payment !== undefined) {
+                                                                    payment.closePartial = false;
+                                                                    await engine.addPayment(payment);
+                                                                }
+                                                                document.body.removeChild(dialog);
+                                                            }
                                                         }
-                                                        document.body.removeChild(dialog);
-                                                    }
-                                                }
-                                            },
-                                            { node: "input", type: "submit", value: engine.translate("Delete") },
-                                            { node: "input", type: "reset", value: engine.translate("Cancel") }
+                                                    },
+                                                    { node: "input", type: "submit", value: engine.translate("Delete") },
+                                                    { node: "input", type: "reset", value: engine.translate("Cancel") }
+                                                ]
+                                            }
                                         ]
                                     }
                                 ]
@@ -694,11 +742,24 @@ document.addEventListener("DOMContentLoaded", e => {
                             { node: "label", text: engine.translate("Name") },
                             { node: "input", name: "name" },
                             { node: "br" },
-                            { node: "label", text: engine.translate("Cost"), class: "cost-label" },
-                            { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
-                            { node: "br" },
-                            { node: "input", type: "submit", value: engine.translate('Save') },
-                            { node: "input", type: "reset", value: engine.translate('Cancel') }
+                            {
+                                node: "div",
+                                class: "input-group",
+                                children: [
+                                    { node: "label", text: engine.translate("Cost"), class: "cost-label" },
+                                    { node: "span", text: engine.currencySymbol, class: "before" },
+                                    { node: "input", name: "cost", type: "number", step: "0.01", min: "0", value: template.amount },
+                                    { node: "br" }
+                                ]
+                            },
+                            {
+                                node: "div",
+                                class: "controls",
+                                children: [
+                                    { node: "input", type: "submit", value: engine.translate('Save') },
+                                    { node: "input", type: "reset", value: engine.translate('Cancel') }
+                                ]
+                            }
                         ]
                     }
                 ]
@@ -780,9 +841,16 @@ document.addEventListener("DOMContentLoaded", e => {
                             { node: "label", text: engine.translate("Name") },
                             { node: "input", name: "name" },
                             { node: "br" },
-                            { node: "label", text: engine.translate("Cost"), class: "cost-label" },
-                            { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
-                            { node: "br" },
+                            {
+                                node: "div",
+                                class: "input-group",
+                                children: [
+                                    { node: "label", text: engine.translate("Cost"), class: "cost-label" },
+                                    { node: "span", text: engine.currencySymbol, class: "before" },
+                                    { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
+                                    { node: "br" }
+                                ]
+                            },
                             { node: "label", text: engine.translate("Start Date") },
                             { node: "input", name: "start", type: "month", value: document.getElementById('month').value },
                             { node: "br" },
@@ -803,8 +871,14 @@ document.addEventListener("DOMContentLoaded", e => {
                             { node: "label", text: engine.translate("Partial Payments") },
                             { node: "input", name: "partial", type: "checkbox" },
                             { node: "br" },
-                            { node: "input", type: "submit", value: engine.translate('Save') },
-                            { node: "input", type: "reset", value: engine.translate('Cancel') }
+                            {
+                                node: "div",
+                                class: "controls",
+                                children: [
+                                    { node: "input", type: "submit", value: engine.translate('Save') },
+                                    { node: "input", type: "reset", value: engine.translate('Cancel') }
+                                ]
+                            }
                         ]
                     }
                 ]
@@ -846,6 +920,7 @@ document.addEventListener("DOMContentLoaded", e => {
         document.querySelectorAll("#tab-picker a.active").forEach(e => e.classList.remove('active'));
         e.target.classList.add("active");
         document.getElementById(target).removeAttribute("hidden");
+        window.scrollTo(0, 0);
     }));
 
     if (localStorage.eyeActiveTab !== undefined) {
