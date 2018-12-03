@@ -21,7 +21,7 @@ const elementTemplate = (properties) => {
      */
     let recursive = (element, properties) => {
             if (properties.text !== undefined) {
-                element.textContent = properties.text;
+                element.innerHTML = properties.text;
             }
 
             if (properties.children !== undefined) {
@@ -81,15 +81,19 @@ class DialogManager {
                 children: [
                     { node: "p", text: this[translate].translate(message, ...parameters) },
                     {
-                        node: "button",
-                        text: this[translate].translate('Close'),
-                        events: {
-                            'click': e => {
-                                resolve();
-                                e.target.closest('dialog').close();
-                                document.body.removeChild(e.target.closest('dialog'));
+                        node: "div",
+                        class: "controls",
+                        children: [{
+                            node: "button",
+                            text: this[translate].translate('Close'),
+                            events: {
+                                'click': e => {
+                                    resolve();
+                                    e.target.closest('dialog').close();
+                                    document.body.removeChild(e.target.closest('dialog'));
+                                }
                             }
-                        }
+                        }]
                     }
                 ]
             });
@@ -174,8 +178,14 @@ class DialogManager {
                             { node: "label", text: this[translate].translate(message, ...parameters) },
                             { node: "input", name: "value" },
                             { node: "br" },
-                            { node: "input", type: "submit", value: this[translate].translate('Okay') },
-                            { node: "input", type: "reset", value: this[translate].translate('Cancel') }
+                            {
+                                node: "div",
+                                class: "controls",
+                                children: [
+                                    { node: "input", type: "submit", value: this[translate].translate('Okay') },
+                                    { node: "input", type: "reset", value: this[translate].translate('Cancel') }
+                                ]
+                            }
                         ]
                     }
                 ]
@@ -205,26 +215,32 @@ class DialogManager {
                 children: [
                     { node: "p", text: this[translate].translate(message, ...values) },
                     {
-                        node: "button",
-                        text: this[translate].translate('Yes'),
-                        events: {
-                            "click": e => {
-                                resolve(true);
-                                e.target.closest('dialog').close();
-                                document.body.removeChild(e.target.closest('dialog'));
+                        node: "div",
+                        class: "controls",
+                        children: [
+                            {
+                                node: "button",
+                                text: this[translate].translate('Yes'),
+                                events: {
+                                    "click": e => {
+                                        resolve(true);
+                                        e.target.closest('dialog').close();
+                                        document.body.removeChild(e.target.closest('dialog'));
+                                    }
+                                }
+                            },
+                            {
+                                node: "button",
+                                text: this[translate].translate('No'),
+                                events: {
+                                    "click": e => {
+                                        resolve(false);
+                                        e.target.closest('dialog').close();
+                                        document.body.removeChild(e.target.closest('dialog'));
+                                    }
+                                }
                             }
-                        }
-                    },
-                    {
-                        node: "button",
-                        text: this[translate].translate('No'),
-                        events: {
-                            "click": e => {
-                                resolve(false);
-                                e.target.closest('dialog').close();
-                                document.body.removeChild(e.target.closest('dialog'));
-                            }
-                        }
+                        ]
                     }
                 ]
             });

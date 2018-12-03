@@ -1,52 +1,78 @@
-body, html {
+html {
+    min-width: 320px;
+    height: 100%;
+}
+
+html,
+body {
     width: 100%;
+    margin: 0;
 }
 
 body {
+    height: auto;
     opacity: 1;
-
     -webkit-transition: 0.5s;
     -moz-transition: 0.5s;
     -ms-transition: 0.5s;
     -o-transition: 0.5s;
     transition: 0.5s;
+    overflow-y: auto;
+    margin: 0;
 }
 
 body.loading {
     opacity: 0;
 }
 
-input, select {
-    padding: 3px;
+input,
+select {
+    padding: 4px;
+    border: 1px solid;
 }
 
 aside {
     line-height: 1.75em
 }
 
+aside div {
+    width: calc(100% - 10px);
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0;
+}
+
 aside label {
     display: inline-block;
     margin-bottom: 2px;
-    width: 40%;
+    width: 53%;
 }
 
 aside input {
     display: inline-block;
-    width: 30%;
+    width: 45%;
+    min-width: 160px;
+}
+
+aside input[readonly] {
+    border-color: transparent;
 }
 
 main table {
     width: 100%;
     padding: 0;
     border-spacing: 0;
+    margin: 0;
 }
 
-main table th, main table td {
+main table th,
+main table td {
     padding: 4px
 }
 
 main table tbody td:first-child {
     font-weight: bolder;
+    padding-left: 0;
 }
 
 main table td:last-child {
@@ -66,47 +92,306 @@ main tbody tr.excessive {
     background: rgba(199, 47, 9, 0.4)
 }
 
-main, aside, menu, footer {
+body > main {
     max-width: 800px;
-    width: 90%;
+    width: calc(100% - 20px);
     margin: 0 auto;
 }
 
-menu {
-    line-height: 45px;
+body > aside,
+body > menu,
+body > footer {
+    background: white;
+    width: 100%;
+    position: fixed;
+    display: block;
+    padding: 0;
+    margin: 0;
 }
 
-menu a, menu a:visited, menu a:active {
+body > aside {
+    top: 0;
+    height: 195px;
+    z-index: 1;
+}
+
+body > menu {
+    top: 195px;
+    line-height: 45px;
+    width: 100%;
+    text-align: center;
+    z-index: 1;
+}
+
+body > footer {
+    bottom: 0;
+    height: 40px;
+    text-align: center;
+}
+
+body > main {
+    margin: 245px auto 40px;
+    padding: 0 10px;
+}
+
+menu a,
+menu a:visited,
+menu a:active {
     color: black;
+    padding: 5px 10px;
+}
+
+menu a.active {
+    text-decoration: none;
+}
+
+button,
+input[type="submit"],
+input[type="reset"] {
+    background: lightgrey;
+    border: 1px solid;
+    line-height: 1.3em;
+    padding: 4px;
+}
+
+h1,
+h2 {
+    text-align: center;
+    line-height: normal;
 }
 
 dialog {
-    line-height: 1.75em
+    line-height: 1.75em;
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
-dialog label, dialog input, dialog select {
+dialog h3 {
+    margin: 0;
+}
+
+dialog label,
+dialog input,
+dialog select {
+    position: relative;
     display: inline-block;
     width: 100%
 }
 
-dialog input[type="submit"], dialog input[type="reset"] {
-    width: 50%
+dialog input {
+    position: relative;
+    display: inline-block;
+    width: calc(100% - 10px);
+}
+
+dialog label input[type="checkbox"],
+dialog label input[type="radio"] {
+    position: absolute;
+    width:  auto;
+    top: 5px;
+    right: 0px;
+}
+
+dialog div.controls {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    margin-top: 5px;
+}
+
+dialog div.controls input[type="submit"],
+dialog div.controls input[type="reset"],
+dialog div.controls button {
+    width: 100%;
+    display: inline-flex;
+    flex-flow: row;
+    justify-content: center;
+    margin-right: 5px;
+}
+
+dialog div.controls input[type="submit"]:last-child,
+dialog div.controls input[type="reset"]:last-child,
+dialog div.controls button:last-child {
+    margin-right: 0;
 }
 
 #tab-settings {
-    line-height: 1.6em;
-}
-
-#tab-settings label {
-    display: inline-block;
-    width: 45%;
-}
-
-#tab-settings input, #tab-settings select {
-    display: inline-block;
-    width: 45%;
+    line-height: 2.1em;
 }
 
 [hidden] {
     display: none !important;
+}
+
+#unsupportedBrowser {
+    display: none;
+}
+
+.unsupported aside,
+.unsupported menu,
+.unsupported main,
+.unsupported hr {
+    display: none;
+}
+
+.unsupported #unsupportedBrowser {
+    display: block;
+}
+
+div.input-group {
+    position: relative;
+    width: 100%;
+}
+
+div.input-group input,
+div.input-group select {
+    position: absolute;
+    right: 0;
+}
+
+div.input-group select {
+    display: inline-block;
+    width: 45%;
+}
+
+div.input-group input {
+    display: inline-block;
+    padding-right: 25px;
+    width: calc(45% - 31px);
+}
+
+div.input-group input[type="checkbox"],
+div.input-group input[type="radio"] {
+    display: initial;
+}
+
+div.input-group span.before {
+    position: absolute;
+    left: 2px;
+    z-index: 1;
+    width: 30px;
+    text-align: right;
+    line-height: 25px;
+    bottom: 0;
+    margin: 0;
+    padding: 0;
+}
+
+
+div.input-group span.before + input {
+    left: 0;
+    padding-left: 35px;
+    bottom: 0;
+    width: calc(45% - 62px);
+}
+
+div.input-group input + span.after {
+    position: absolute;
+    right: 6px;
+    top: -3px;
+    text-align: right;
+}
+
+dialog div.input-group {
+    height: 55px;
+    margin-bottom: 5px;
+}
+
+dialog div.input-group span.before + input {
+    width: calc(100% - 62px);
+}
+
+#month {
+    min-width: 122px;
+    width: calc(45% - 38px);
+}
+
+#now {
+    width: 30px;
+    margin: 0 0 0 5px;
+    line-height: 22px;
+    padding: 3px;
+}
+
+@media only screen and (max-width: 730px) {
+    aside label {
+        width: 45%;
+    }
+}
+
+@media only screen and (max-width: 450px) {
+    aside label {
+        margin-left: 15px;
+    }
+
+    menu a,
+    menu a:visited,
+    menu a:active {
+        padding: 5px 5px;
+    }
+
+    #tab-settings {
+        line-height: 1.6em;
+    }
+
+    div.input-group label {
+        width: 100%;
+        display: block;
+    }
+
+    div.input-group input,
+    div.input-group select  {
+        position: static;
+    }
+
+    div.input-group label + input {
+        width: calc(100% - 31px);
+    }
+
+    div.input-group label + select {
+        width: 100%;
+    }
+
+    div.input-group input + span.after {
+        display: inline-block;
+        position: absolute;
+        right: 10px;
+        left: initial;
+        top: 26px;
+        width: 30px;
+    }
+}
+
+@media only screen and (max-width: 360px) {
+    .controls {
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+    }
+
+    .controls button {
+        width: 100%;
+        display: inline-flex;
+        flex-flow: row;
+        justify-content: center;
+        margin-right: 5px;
+    }
+
+    .controls button:last-child {
+        margin-right: none;
+    }
+}
+
+@media only screen and (max-width: 330px) {
+    aside label {
+        margin-left: 5px;
+        width: 35%;
+    }
+
+    menu a,
+    menu a:visited,
+    menu a:active {
+        padding: 5px 0px;
+    }
 }
