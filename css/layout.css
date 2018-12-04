@@ -76,7 +76,7 @@ main table td {
 
 main table tbody td:first-child {
     font-weight: bolder;
-    padding-left: 0;
+    padding-left: 5px;
 }
 
 main table td:last-child {
