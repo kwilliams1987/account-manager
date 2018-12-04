@@ -133,6 +133,12 @@ body > footer {
     text-align: center;
 }
 
+body > footer .social-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+}
+
 body > main {
     margin: 245px auto 40px;
     padding: 0 10px;
