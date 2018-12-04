@@ -987,7 +987,7 @@ document.querySelectorAll("#tab-picker a").forEach(e => e.addEventListener("clic
     if (e.target.classList.contains("active")) {
         return;
     }
-  
+
     let target = e.target.href.split('#')[1];
     localStorage.eyeActiveTab = target;
 
@@ -1001,10 +1001,10 @@ document.querySelectorAll("#tab-picker a").forEach(e => e.addEventListener("clic
 if ('serviceWorker' in navigator) {
     (async () => {
         try {
-            let worker = await navigator.serviceWorker.register('/service.js')
-            console.log(worker.scope);
+            let worker = await navigator.serviceWorker.register('/service.js', { scope: '/' });
         } catch (error) {
             console.error(error);
+            await dialogs.alert("Offline mode is not available.");
         }
     })();
 }

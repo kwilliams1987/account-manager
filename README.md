@@ -20,9 +20,6 @@ Features:
   * All done on the client side using Javascript `crypto.subtle` package.
 
 To-do:
-* Service worker.
-  * Implement Progressive Web App standard.
-    * Trivial since there is no network activity anyway.
 * Reporting and analysis.
 * Other backup methods / cross-device synchronization.
   * Encrypt to cloud storage.
