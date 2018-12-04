@@ -21,8 +21,7 @@ const files = [
     'js/storage.js',
     'js/strings.js',
     'js/ui.js',
-    '/',
-    '/index.html'
+    'index.html'
 ];
 
 self.addEventListener('install', e => e.waitUntil(caches.open(cacheId).then(cache => cache.addAll(files))));
