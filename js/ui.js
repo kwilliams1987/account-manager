@@ -1001,7 +1001,7 @@ document.querySelectorAll("#tab-picker a").forEach(e => e.addEventListener("clic
 if ('serviceWorker' in navigator) {
     (async () => {
         try {
-            await navigator.serviceWorker.register('service.js', { scope: '/' });
+            await navigator.serviceWorker.register('service.js');
         } catch (error) {
             console.error(error);
             await dialogs.alert("Offline mode is not available.");
