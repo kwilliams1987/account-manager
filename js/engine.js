@@ -44,7 +44,7 @@ class PaymentEngine extends ITranslate {
         };
 
         this[save] = async () => {
-            localStorage.eyePaymentEngine = JSON.stringify(this[internal].storage);
+            localStorage.financePaymentEngine = JSON.stringify(this[internal].storage);
 
             this[internal].expected = 0;
             this[internal].paid = 0;
@@ -83,14 +83,19 @@ class PaymentEngine extends ITranslate {
         }
 
         try {
-            this[internal].storage = new MoneyStorage(localStorage.eyePaymentEngine);
+            if (localStorage.eyePaymentEngine !== undefined) {
+                localStorage.financePaymentEngine = localStorage.eyePaymentEngine;
+                localStorage.removeItem("eyePaymentEngine");
+            }
+
+            this[internal].storage = new MoneyStorage(localStorage.financePaymentEngine);
         } catch (e) {
             this[internal].storage = new MoneyStorage();
-            localStorage.removeItem("eyePaymentEngine");
+            localStorage.removeItem("financePaymentEngine");
         }
 
         window.addEventListener("storage", e => {
-            if (e.key === "eyePaymentEngine") {
+            if (e.key === "financePaymentEngine") {
                 this[internal].storage = new MoneyStorage(e.newValue);
                 this[internal].trigger('change');
             }
@@ -446,7 +451,7 @@ class PaymentEngine extends ITranslate {
 
         JSON.parse(result);
 
-        localStorage.eyePaymentEngine = result;
+        localStorage.financePaymentEngine = result;
         this[internal].storage = new MoneyStorage(result);
         this[internal].trigger('change');
         return version;

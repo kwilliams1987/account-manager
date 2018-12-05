@@ -66,8 +66,7 @@ Strings[internal] = {
     "en-GB": {
         "__CURRENCY__": "GBP",
         "__NAME__": "English (UK)",
-        "Eye on My.money": "Eye on My.money",
-        "Eye on My Money": "Eye on My Money",
+        "Finances": "Finances",
         "Overview": "Overview",
         "Settings": "Settings",
         "Payments": "Payments",
@@ -155,8 +154,7 @@ Strings[internal] = {
     "en-US": {
         "__CURRENCY__": "USD",
         "__NAME__": "English (US)",
-        "Eye on My.money": "Eye on My.money",
-        "Eye on My Money": "Eye on My Money",
+        "Finances": "Finances",
         "Overview": "Overview",
         "Settings": "Settings",
         "Payments": "Payments",
@@ -244,8 +242,7 @@ Strings[internal] = {
     "nl-NL": {
         "__CURRENCY__": "EUR",
         "__NAME__": "Nederlands",
-        "Eye on My.money": "Eye on My.money",
-        "Eye on My Money": "Eye on My Money",
+        "Finances": "Finances",
         "Overview": "Overzicht",
         "Settings": "Instellingen",
         "Payments": "Betaalingen",
