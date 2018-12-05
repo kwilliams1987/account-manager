@@ -1,7 +1,23 @@
-const version = "1.0.6";
+const version = "1.0.9";
 
 const cacheId = "FINANCE-" + version;
 const files = [
+    'apps/android-chrome-192x192.png',
+    'apps/android-chrome-512x512.png',
+    'apps/apple-touch-icon.png',
+    'apps/browserconfig.xml',
+    'apps/favicon-16x16.png',
+    'apps/favicon-32x32.png',
+    'apps/favicon-194x194.png',
+    'apps/favicon.ico',
+    'apps/icon.svg',
+    'apps/manifest.json',
+    'apps/mstile-70x70.png',
+    'apps/mstile-144x144.png',
+    'apps/mstile-150x150.png',
+    'apps/mstile-310x150.png',
+    'apps/mstile-310x310.png',
+    'apps/safari-pinned-tab.svg',
     'css/fonts/open-sans-regular-a.woff2',
     'css/fonts/open-sans-regular-b.woff2',
     'css/fonts/open-sans-regular-c.woff2',
@@ -9,6 +25,8 @@ const files = [
     'css/fonts/open-sans-regular-e.woff2',
     'css/fonts/open-sans-regular-f.woff2',
     'css/fonts/open-sans-regular-g.woff2',
+    'css/images/github.svg',
+    'css/images/paypal.svg',
     'css/fonts.css',
     'css/layout.css',
     'js/model/payment.js',
@@ -21,6 +39,8 @@ const files = [
     'js/storage.js',
     'js/strings.js',
     'js/ui.js',
+    'favicon.ico',
+    './',
     'index.html'
 ];
 

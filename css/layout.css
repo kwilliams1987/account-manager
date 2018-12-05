@@ -76,7 +76,7 @@ main table td {
 
 main table tbody td:first-child {
     font-weight: bolder;
-    padding-left: 0;
+    padding-left: 5px;
 }
 
 main table td:last-child {
@@ -131,12 +131,26 @@ body > footer {
     bottom: 0;
     height: 3em;
     text-align: center;
+    font-size: small;
 }
 
-body > footer .social-icon {
-    display: inline-block;
+body > footer .social-icon::before {
+    content: ' ';
+    background-size: contain;
+    background-position: center;
     width: 1em;
     height: 1em;
+    display: inline-block;
+    margin-right: 0.2em;
+    background-repeat: no-repeat;
+}
+
+body > footer .social-icon.github::before {
+    background-image: url('images/github.svg');
+}
+
+body > footer .social-icon.paypal::before {
+    background-image: url('images/paypal.svg');
 }
 
 body > main {
@@ -324,6 +338,10 @@ dialog div.input-group span.before + input {
     padding: 3px;
 }
 
+.mobile {
+    display: none;
+}
+
 @media only screen and (max-width: 730px) {
     aside label {
         width: 45%;
@@ -339,6 +357,10 @@ dialog div.input-group span.before + input {
     menu a:visited,
     menu a:active {
         padding: 5px 5px;
+    }
+
+    body > footer {
+        height: 4.5em;
     }
 
     #tab-settings {
@@ -370,6 +392,14 @@ dialog div.input-group span.before + input {
         left: initial;
         top: 26px;
         width: 30px;
+    }
+
+    .desktop {
+        display: none;
+    }
+
+    .mobile {
+        display: initial;
     }
 }
 
