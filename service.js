@@ -1,4 +1,4 @@
-const version = "1.0.6";
+const version = "1.0.7";
 
 const cacheId = "FINANCE-" + version;
 const files = [
@@ -9,6 +9,8 @@ const files = [
     'css/fonts/open-sans-regular-e.woff2',
     'css/fonts/open-sans-regular-f.woff2',
     'css/fonts/open-sans-regular-g.woff2',
+    'css/images/github.svg',
+    'css/images/paypal.svg',
     'css/fonts.css',
     'css/layout.css',
     'js/model/payment.js',
@@ -21,6 +23,8 @@ const files = [
     'js/storage.js',
     'js/strings.js',
     'js/ui.js',
+    'favicon.ico',
+    './',
     'index.html'
 ];
 
