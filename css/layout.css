@@ -3,7 +3,7 @@
 html {
     font-family: 'Open Sans', sans-serif;
     font-size: 0.9em;
-    min-width: 320px;
+    min-width: 23em;
     height: 100%;
 }
 
@@ -31,35 +31,87 @@ body.loading {
 
 input,
 select {
-    padding: 4px;
+    padding: 0.3em;
     border: 1px solid;
 }
 
-aside {
+aside[role="region"] {
     line-height: 1.75em
 }
 
-aside div {
-    width: calc(100% - 10px);
-    max-width: 800px;
+aside[role="region"] div {
+    width: calc(100% - 1em);
+    max-width: 55em;
     margin: 0 auto;
-    padding: 0;
+    padding: 0 0.5em;
 }
 
-aside label {
+aside[role="region"] label {
     display: inline-block;
-    margin-bottom: 2px;
+    margin-bottom: 0.2em;
     width: 53%;
 }
 
-aside input {
+aside[role="region"] input {
     display: inline-block;
     width: 45%;
-    min-width: 160px;
+    min-width: 11em;
 }
 
-aside input[readonly] {
+aside[role="region"] input[readonly] {
     border-color: transparent;
+}
+
+aside[role="dialog"] {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    line-height: 2.2em;
+    color: white;
+    padding: 0 0.5em;
+}
+
+aside[role="dialog"] button {
+    position: absolute;
+    right: 0.25em;
+    top: 50%;
+    transform: translateY(-50%);
+    min-width: 5em;
+}
+
+body > aside[role="region"],
+body > menu,
+body > footer {
+    background: white;
+    width: 100%;
+    position: fixed;
+    display: block;
+    padding: 0;
+    margin: 0;
+}
+
+body > aside[role="region"] {
+    top: 0;
+    height: 13em;
+    z-index: 1;
+}
+
+body > menu {
+    top: 13em;
+    line-height: 2em;
+    width: 100%;
+    text-align: center;
+    z-index: 1;
+}
+
+body > main {
+    margin: 15em auto 3em;
+    padding: 0 0.5em;
+    max-width: 55em;
+    width: calc(100% - 1em);
 }
 
 main table {
@@ -71,12 +123,12 @@ main table {
 
 main table th,
 main table td {
-    padding: 4px
+    padding: 0.3em
 }
 
 main table tbody td:first-child {
     font-weight: bolder;
-    padding-left: 5px;
+    padding-left: 0.4em;
 }
 
 main table td:last-child {
@@ -94,37 +146,6 @@ main tbody tr.partial {
 
 main tbody tr.excessive {
     background: rgba(199, 47, 9, 0.4)
-}
-
-body > main {
-    max-width: 800px;
-    width: calc(100% - 20px);
-    margin: 0 auto;
-}
-
-body > aside,
-body > menu,
-body > footer {
-    background: white;
-    width: 100%;
-    position: fixed;
-    display: block;
-    padding: 0;
-    margin: 0;
-}
-
-body > aside {
-    top: 0;
-    height: 195px;
-    z-index: 1;
-}
-
-body > menu {
-    top: 195px;
-    line-height: 45px;
-    width: 100%;
-    text-align: center;
-    z-index: 1;
 }
 
 body > footer {
@@ -153,16 +174,14 @@ body > footer .social-icon.paypal::before {
     background-image: url('images/paypal.svg');
 }
 
-body > main {
-    margin: 245px auto 40px;
-    padding: 0 10px;
+menu a {
+    padding: 0.5em 1em;
 }
 
 menu a,
 menu a:visited,
 menu a:active {
     color: black;
-    padding: 5px 10px;
 }
 
 menu a.active {
@@ -175,7 +194,7 @@ input[type="reset"] {
     background: lightgrey;
     border: 1px solid;
     line-height: 1.3em;
-    padding: 4px;
+    padding: 0.3em;
 }
 
 h1,
@@ -206,22 +225,22 @@ dialog select {
 dialog input {
     position: relative;
     display: inline-block;
-    width: calc(100% - 10px);
+    width: calc(100% - 0.8em);
 }
 
 dialog label input[type="checkbox"],
 dialog label input[type="radio"] {
     position: absolute;
     width:  auto;
-    top: 5px;
-    right: 0px;
+    top: 0.4em;
+    right: 0;
 }
 
 dialog div.controls {
     display: flex;
     justify-content: center;
     align-items: stretch;
-    margin-top: 5px;
+    margin-top: 0.4em;
 }
 
 dialog div.controls input[type="submit"],
@@ -231,7 +250,7 @@ dialog div.controls button {
     display: inline-flex;
     flex-flow: row;
     justify-content: center;
-    margin-right: 5px;
+    margin-right: 0.4em;
 }
 
 dialog div.controls input[type="submit"]:last-child,
@@ -281,8 +300,8 @@ div.input-group select {
 
 div.input-group input {
     display: inline-block;
-    padding-right: 25px;
-    width: calc(45% - 31px);
+    padding-right: 2em;
+    width: calc(45% - 2.4em);
 }
 
 div.input-group input[type="checkbox"],
@@ -292,12 +311,12 @@ div.input-group input[type="radio"] {
 
 div.input-group span.before {
     position: absolute;
-    left: 2px;
+    left: 1px;
     z-index: 1;
-    width: 30px;
+    width: 2em;
     text-align: right;
-    line-height: 25px;
-    bottom: 0;
+    line-height: 1.6em;
+    bottom: 1px;
     margin: 0;
     padding: 0;
 }
@@ -305,37 +324,38 @@ div.input-group span.before {
 
 div.input-group span.before + input {
     left: 0;
-    padding-left: 35px;
+    padding-left: 2.2em;
     bottom: 0;
-    width: calc(45% - 62px);
+    width: calc(45% - 4.4em);
 }
 
 div.input-group input + span.after {
     position: absolute;
-    right: 6px;
-    top: -3px;
+    right: 0.3em;
+    top: 1px;
     text-align: right;
+    line-height: 1.6em;
 }
 
 dialog div.input-group {
-    height: 55px;
-    margin-bottom: 5px;
+    height: 3.5em;
+    margin-bottom: 0.4em;
 }
 
 dialog div.input-group span.before + input {
-    width: calc(100% - 62px);
+    width: calc(100% - 4.4em);
 }
 
 #month {
-    min-width: 122px;
-    width: calc(45% - 38px);
+    min-width: 8em;
+    width: calc(45% - 3em);
 }
 
 #now {
-    width: 30px;
-    margin: 0 0 0 5px;
-    line-height: 22px;
-    padding: 3px;
+    width: 2.5em;
+    margin: 0 0 0 0.4em;
+    line-height: 2em;
+    padding: 0.2em;
 }
 
 .mobile {
@@ -343,20 +363,22 @@ dialog div.input-group span.before + input {
 }
 
 @media only screen and (max-width: 730px) {
-    aside label {
-        width: 45%;
+    aside[role="region"] label {
+        width: 35%;
     }
 }
 
 @media only screen and (max-width: 450px) {
-    aside label {
-        margin-left: 15px;
+    aside[role="region"] label {
+        margin-left: 1em;
     }
 
-    menu a,
-    menu a:visited,
-    menu a:active {
-        padding: 5px 5px;
+    menu a {
+        padding: 0.5em;
+    }
+
+    body > main {
+        margin-bottom: 4.5em;
     }
 
     body > footer {
@@ -378,7 +400,7 @@ dialog div.input-group span.before + input {
     }
 
     div.input-group label + input {
-        width: calc(100% - 31px);
+        width: calc(100% - 4.4em);
     }
 
     div.input-group label + select {
@@ -388,10 +410,9 @@ dialog div.input-group span.before + input {
     div.input-group input + span.after {
         display: inline-block;
         position: absolute;
-        right: 10px;
+        right: 0.3em;
         left: initial;
-        top: 26px;
-        width: 30px;
+        top: 1.7em;
     }
 
     .desktop {
@@ -415,7 +436,7 @@ dialog div.input-group span.before + input {
         display: inline-flex;
         flex-flow: row;
         justify-content: center;
-        margin-right: 5px;
+        margin-right: 0.4em;
     }
 
     .controls button:last-child {
@@ -424,14 +445,14 @@ dialog div.input-group span.before + input {
 }
 
 @media only screen and (max-width: 330px) {
-    aside label {
-        margin-left: 5px;
+    aside[role="region"] label {
+        margin-left: 0.4em;
         width: 35%;
     }
 
     menu a,
     menu a:visited,
     menu a:active {
-        padding: 5px 0px;
+        padding: 0.4em 0;
     }
 }

@@ -332,8 +332,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     translate(engine);
 
-    if (localStorage.eyeActiveTab !== undefined) {
-        Array.from(document.querySelectorAll('#tab-picker a')).find(a => a.href.split('#')[1] === localStorage.eyeActiveTab).click();
+    if (localStorage.financeActiveTab !== undefined) {
+        Array.from(document.querySelectorAll('#tab-picker a')).find(a => a.href.split('#')[1] === localStorage.financeActiveTab).click();
     }
 
     document.documentElement.classList.remove('unsupported');
@@ -989,7 +989,7 @@ document.querySelectorAll("#tab-picker a").forEach(e => e.addEventListener("clic
     }
 
     let target = e.target.href.split('#')[1];
-    localStorage.eyeActiveTab = target;
+    localStorage.financeActiveTab = target;
 
     document.querySelectorAll("main section").forEach(e => e.setAttribute("hidden", ""));
     document.querySelectorAll("#tab-picker a.active").forEach(e => e.classList.remove('active'));
@@ -1004,7 +1004,7 @@ if ('serviceWorker' in navigator) {
             await navigator.serviceWorker.register('service.js');
         } catch (error) {
             console.error(error);
-            await dialogs.alert("Offline mode is not available.");
+            await dialogs.notification("Offline mode is not available.");
         }
     })();
 }
