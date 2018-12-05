@@ -87,7 +87,7 @@ class DialogManager {
                             node: "button",
                             text: this[translate].translate('Close'),
                             events: {
-                                'click': e => {
+                                click: e => {
                                     resolve();
                                     e.target.closest('dialog').close();
                                     document.body.removeChild(e.target.closest('dialog'));
@@ -156,18 +156,17 @@ class DialogManager {
         return new Promise(resolve => {
             let dialog = elementTemplate({
                 node: "dialog",
-                role: "prompt",
                 children: [
                     {
                         node: "form",
                         events: {
-                            'submit': e => {
+                            submit: e => {
                                 e.preventDefault();
                                 resolve(Array.from(e.target.children).find(i => i.name === "value").value);
                                 e.target.closest('dialog').close();
                                 document.body.removeChild(e.target.closest('dialog'));
                             },
-                            'reset': e => {
+                            reset: e => {
                                 e.preventDefault();
                                 resolve(null);
                                 e.target.closest('dialog').close();
@@ -211,7 +210,6 @@ class DialogManager {
         return new Promise(resolve => {
             let dialog = elementTemplate({
                 node: "dialog",
-                role: "confirm",
                 children: [
                     { node: "p", text: this[translate].translate(message, ...values) },
                     {
@@ -222,7 +220,7 @@ class DialogManager {
                                 node: "button",
                                 text: this[translate].translate('Yes'),
                                 events: {
-                                    "click": e => {
+                                    click: e => {
                                         resolve(true);
                                         e.target.closest('dialog').close();
                                         document.body.removeChild(e.target.closest('dialog'));
@@ -233,7 +231,7 @@ class DialogManager {
                                 node: "button",
                                 text: this[translate].translate('No'),
                                 events: {
-                                    "click": e => {
+                                    click: e => {
                                         resolve(false);
                                         e.target.closest('dialog').close();
                                         document.body.removeChild(e.target.closest('dialog'));
@@ -248,6 +246,30 @@ class DialogManager {
             document.body.appendChild(dialog);
             dialog.showModal();
         });
+    }
+
+    /**
+     * @param {String} message Translatable message string.
+     * @param {...String} values Translation placeholder values.
+     * @returns {void}
+     */
+    notification(message, ...values) {
+        let notification = elementTemplate({
+            node: "aside",
+            role: "dialog",
+            text: this[translate].translate(message, ...values),
+            children: [
+                {
+                    node: 'button',
+                    text: this[translate].translate("Close"),
+                    events: {
+                        click: e => document.body.removeChild(e.target.closest('aside'))
+                    }
+                }
+            ]
+        });
+
+        document.body.appendChild(notification);
     }
 }
 

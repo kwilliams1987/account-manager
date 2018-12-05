@@ -1,7 +1,7 @@
 <!doctype html>
 <html class="unsupported">
     <head>
-        <title class="translate">Eye on My.money</title>
+        <title class="translate">Finances</title>
         <link rel="stylesheet" href="css/layout.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,16 +22,16 @@
         <meta name="theme-color" content="#ffffff">
 
         <script>
-            if (localStorage !== undefined && localStorage.eyeActiveTab !== undefined) {
+            if (localStorage !== undefined && localStorage.financeActiveTab !== undefined) {
                 document.documentElement.classList.remove('unsupported');
             }
         </script>
     </head>
 
     <body>
-        <aside>
+        <aside role="region">
             <div>
-                <h1 class="translate">Eye on My Money</h1>
+                <h1 class="translate">Finances</h1>
                 <label for="month" class="translate">Month</label>
                     <input type="month" id="month"><button id="now">&#128338;</button><br>
                 <label for="expected" class="translate">Expected</label>
@@ -43,15 +43,15 @@
             </div>
         </aside>
 
-        <menu id="tab-picker">
-            <a href="#tab-pending" class="translate active">Pending Bills</a>
-            <a href="#tab-income" class="translate">Planned Income</a>
-            <a href="#tab-paid" class="translate">Paid Bills</a>
-            <a href="#tab-settings" class="translate">Settings</a>
+        <menu id="tab-picker" role="tablist">
+            <a href="#tab-pending" class="translate active" role="tab">Pending Bills</a>
+            <a href="#tab-income" class="translate" role="tab">Planned Income</a>
+            <a href="#tab-paid" class="translate" role="tab">Paid Bills</a>
+            <a href="#tab-settings" class="translate" role="tab">Settings</a>
         </menu>
 
         <main>
-            <section id="tab-pending">
+            <section id="tab-pending" role="tabpanel">
                 <h2 class="translate">Pending Bills</h2>
                 <p class="controls">
                     <button class="schedule bill" class="translate">Schedule Bill</button>
@@ -71,7 +71,7 @@
                 </table>
             </section>
 
-            <section id="tab-income" hidden>
+            <section id="tab-income" role="tabpanel" hidden>
                 <h2 class="translate">Planned Income</h2>
                 <p class="controls">
                     <button class="schedule income" class="translate">Schedule Income</button>
@@ -92,7 +92,7 @@
                 </table>
             </section>
 
-            <section id="tab-paid" hidden>
+            <section id="tab-paid" role="tabpanel" hidden>
                 <h2 class="translate">Paid Bills</h2>
                 <p class="controls">&nbsp;</p>
                 <table>
@@ -109,7 +109,7 @@
                 </table>
             </section>
 
-            <section id="tab-settings" hidden>
+            <section id="tab-settings" role="tabpanel" hidden>
                 <h2 class="translate">Settings</h2>
 
                 <div class="input-group">
