@@ -149,7 +149,9 @@ Strings[internal] = {
         "Password must be at least {0} characters.": "Password must be at least {0} characters.",
         "Please provide a filename:": "Please provide a filename:",
         "Please provide a valid backup name.": "Please provide a valid backup name.",
-        "Offline mode is not available.": "Offline mode is not available."
+        "Offline mode is not available.": "Offline mode is not available.",
+        "Benefactor": "Benefactors",
+        "All Benefactors": "All Benefactors"
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -237,7 +239,9 @@ Strings[internal] = {
         "Password must be at least {0} characters.": "Password must be at least {0} characters.",
         "Please provide a filename:": "Please provide a filename:",
         "Please provide a valid backup name.": "Please provide a valid backup name.",
-        "Offline mode is not available.": "Offline mode is not available."
+        "Offline mode is not available.": "Offline mode is not available.",
+        "Benefactor": "Benefactors",
+        "All Benefactors": "All Benefactors"
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -325,7 +329,9 @@ Strings[internal] = {
         "Password must be at least {0} characters.": "Wachtwoord moet ten minste {0} tekens bevatten.",
         "Please provide a filename:": "Kies en bestandsnaam:",
         "Please provide a valid backup name.": "Dit is geen geldige bestandsnaam",
-        "Offline mode is not available.": "Offline-modus is niet beschikbaar."
+        "Offline mode is not available.": "Offline-modus is niet beschikbaar.",
+        "Benefactor": "Bij betrokken",
+        "All Benefactors": "Allemaal"
     },
 }
 

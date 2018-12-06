@@ -97,36 +97,46 @@ const handler = async e => {
         let payments = values[0];
         let templates = values[1];
         let excessMod = 1 + (e.caller.excessive / 100);
+        let benefactor = engine.benefactor;
+        let benefactors = [];
 
         let outputs = [];
 
-        payments.filter(p => p.templateId.equalTo(Guid.empty)).forEach(p =>
-            outputs.push({
-                id: p.id,
-                name: p.name,
-                benefactor: null,
-                expected: null,
-                actual: p.amount,
-                paid: true,
-                excessive: true,
-                partial: false
-
-        }));
+        payments.filter(p => p.templateId.equalTo(Guid.empty)).forEach(p => {
+            if (benefactor === null) {
+                outputs.push({
+                    id: p.id,
+                    name: p.name,
+                    benefactor: null,
+                    expected: null,
+                    actual: p.amount,
+                    paid: true,
+                    excessive: true,
+                    partial: false
+                });
+            }
+        });
 
         templates.forEach(t => {
-            let r = {
-                id: t.id,
-                name: t.name,
-                benefactor: t.benefactor,
-                expected: t.amount,
-                actual: t.getCost(payments),
-                paid: t.isPaid(payments),
-                partial: t.partial
-            };
+            if (t.benefactor !== null && benefactors.indexOf(t.benefactor) === -1) {
+                benefactors.push(t.benefactor);
+            }
 
-            r.excessive = r.actual > r.expected * excessMod;
+            if (benefactor === null || benefactor === t.benefactor) {
+                let r = {
+                    id: t.id,
+                    name: t.name,
+                    benefactor: t.benefactor,
+                    expected: t.amount,
+                    actual: t.getCost(payments),
+                    paid: t.isPaid(payments),
+                    partial: t.partial
+                };
 
-            outputs.push(r);
+                r.excessive = r.actual > r.expected * excessMod;
+
+                outputs.push(r);
+            }
         });
 
         outputs.sort((o1, o2) => {
@@ -168,6 +178,7 @@ const handler = async e => {
                         <td>${amount === null ? '' : e.caller.formatCurrency(amount)}</td>
                         <td>${cost === 0 ? '' : e.caller.formatCurrency(cost)}</td>
                         <td>
+                            ${amount !== null ? `<button class="edit">${e.caller.translate("Edit")}</button>` : ''}
                             <button class="cancel">${e.caller.translate("Undo")}</button>
                         </td>
                     </tr>`.toHtml();
@@ -240,6 +251,35 @@ const handler = async e => {
             }
         });
 
+        if (benefactors.length === 0) {
+            document.querySelectorAll('.benefactor-selector').forEach(e => {
+                e.setAttribute("hidden", "");
+                e.clearChildren();
+                let all = document.createElement("option");
+                all.value = "";
+                all.innerHTML = engine.translate("All Benefactors");
+                e.appendChild(all);
+            });
+        } else {
+            document.querySelectorAll('.benefactor-selector').forEach(e => {
+                e.clearChildren();
+
+                let all = document.createElement("option");
+                all.value = "";
+                all.innerHTML = engine.translate("All Benefactors");
+                e.appendChild(all);
+
+                benefactors.sort().forEach(b => {
+                    let option = document.createElement("option");
+                    option.value = b;
+                    option.innerHTML = b;
+                    e.appendChild(option);
+                });
+
+                e.removeAttribute("hidden");
+            });
+        }
+
         if (pending.children.length === 0) {
             pending.appendChild(`<tr><td colspan="5" class="empty">${engine.translate("No pending bills!")}</td></tr>`.toHtml());
         } else {
@@ -290,9 +330,14 @@ const handler = async e => {
     document.getElementById('locale').value = e.caller.locale;
     document.getElementById('currency').value = e.caller.currency;
     document.getElementById('excessive').value = e.caller.excessive;
+    document.querySelectorAll('.benefactor-selector').forEach(s => s.value = e.caller.benefactor === null ? "" : e.caller.benefactor);
 
     document.body.classList.remove("loading");
     translate(e.caller);
+
+    document.getElementById('tab-pending').classList.remove('loading');
+    document.getElementById('tab-income').classList.remove('loading');
+    document.getElementById('tab-paid').classList.remove('loading');
 }
 
 const translate = engine => document.querySelectorAll(".translate").forEach(e => {
@@ -533,6 +578,7 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                     let result = await new Promise(resolve => {
                         let dialog = elementTemplate({
                             node: "dialog",
+                            id: "schedule-dialog",
                             children: [
                                 { node: "h3", text: engine.translate("Edit Schedule") },
                                 {
@@ -541,22 +587,20 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                                         'submit': async e => {
                                             e.preventDefault();
 
-                                            /**
-                                             * @type {HTMLElement[]}
-                                             */
-                                            let children = Array.from(e.target.children);
-                                            let start = children.find(i => i.name === "start").value;
-                                            let end = children.find(i => i.name === "end").value;
+                                            let start = document.querySelector('#schedule-dialog [name="start"]').value;
+                                            let end = document.querySelector('#schedule-dialog [name="end"]').value;
+                                            let benefactor = document.querySelector('#schedule-dialog [name="benefactor"]').value;
 
                                             let result = {
                                                 id: template.id,
                                                 created: template.created,
-                                                name: children.find(i => i.name === "name").value,
-                                                amount: parseFloat(children.find(i => i.name === "cost").value) * (income ? -1 : 1),
+                                                name: document.querySelector('#schedule-dialog [name="name"]').value,
+                                                benefactor: benefactor  === '' ? null : benefactor,
+                                                amount: parseFloat(document.querySelector('#schedule-dialog [name="cost"]').value) * (income ? -1 : 1),
                                                 startDate: start === "" ? null : new Date(start + "-01"),
                                                 endDate: end === "" ? null : new Date(end + "-01"),
-                                                recurrence: parseInt(children.find(i => i.name === "recurrency").value),
-                                                partial: income ? false : children.find(i => i.name === "partial").checked
+                                                recurrence: parseInt(document.querySelector('#schedule-dialog [name="recurrency"]').value),
+                                                partial: income ? false : document.querySelector('#schedule-dialog [name="partial"]').checked
                                             };
 
                                             if (result.name + "" === "") {
@@ -592,7 +636,10 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                                     },
                                     children: [
                                         { node: "label", text: engine.translate("Name"), },
-                                        { node: "input", name: "name", value: template.name },
+                                        { node: "input", name: "name", required: "", value: template.name },
+                                        { node: "br" },
+                                        { node: "label", text: engine.translate("Benefactor"), },
+                                        { node: "input", name: "benefactor", value: template.benefactor === null ? '' : template.benefactor },
                                         { node: "br" },
                                         {
                                             node: "div",
@@ -600,7 +647,7 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                                             children: [
                                                 { node: "label", text: engine.translate("Cost"), class: "cost-label" },
                                                 { node: "span", text: engine.currencySymbol, class: "before" },
-                                                { node: "input", name: "cost", type: "number", step: "0.01", min: "0", value: template.amount },
+                                                { node: "input", name: "cost", type: "number", step: "0.01", min: "0", required: "", value: template.amount },
                                                 { node: "br" }
                                             ]
                                         },
@@ -668,13 +715,11 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                             dialog.querySelector('.cost-label').innerHTML = engine.translate("Value");
                             dialog.querySelector('[name="cost"]').value = template.amount * -1;
 
-                            let partial = dialog.querySelector('[name="partial"]'),
+                            let partial = dialog.querySelector('[name="partial"]').parentElement,
                                 elements = Array.from(partial.parentElement.children),
                                 index = elements.indexOf(partial),
-                                label = elements[index - 1],
                                 br = elements[index + 1];
 
-                            partial.parentElement.removeChild(label);
                             partial.parentElement.removeChild(br);
                             partial.parentElement.removeChild(partial);
                         }
@@ -848,6 +893,7 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
     let template = await new Promise(resolve => {
         let dialog = elementTemplate({
             node: "dialog",
+            id: "schedule-dialog",
             children: [
                 { node: "h3", text: engine.translate("Schedule Bill") },
                 {
@@ -856,20 +902,18 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
                         submit: async e => {
                             e.preventDefault();
 
-                            /**
-                             * @type {HTMLElement[]}
-                             */
-                            let children = Array.from(e.target.children);
-                            let start = children.find(i => i.name === "start").value;
-                            let end = children.find(i => i.name === "end").value;
+                            let start = document.querySelector('#schedule-dialog [name="start"]').value;
+                            let end = document.querySelector('#schedule-dialog [name="end"]').value;
+                            let benefactor = document.querySelector('#schedule-dialog [name="benefactor"]').value;
 
                             let result = {
-                                name: children.find(i => i.name === "name").value,
-                                amount: parseFloat(children.find(i => i.name === "cost").value),
+                                name: document.querySelector('#schedule-dialog [name="name"]').value,
+                                benefactor: benefactor  === '' ? null : benefactor,
+                                amount: parseFloat(document.querySelector('#schedule-dialog [name="cost"]').value),
                                 startDate: start === "" ? null : new Date(start + "-01"),
                                 endDate: end === "" ? null : new Date(end + "-01"),
-                                recurrence: parseInt(children.find(i => i.name === "recurrency").value),
-                                partial: income ? false : children.find(i => i.name === "partial").checked
+                                recurrence: parseInt(document.querySelector('#schedule-dialog [name="recurrency"]').value),
+                                partial: income ? false : document.querySelector('#schedule-dialog [name="partial"]').checked
                             };
 
                             if (result.name + "" === "") {
@@ -908,7 +952,10 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
                     },
                     children: [
                         { node: "label", text: engine.translate("Name") },
-                        { node: "input", name: "name" },
+                        { node: "input", name: "name", required: "" },
+                        { node: "br" },
+                        { node: "label", text: engine.translate("Benefactor") },
+                        { node: "input", name: "benefactor" },
                         { node: "br" },
                         {
                             node: "div",
@@ -916,7 +963,7 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
                             children: [
                                 { node: "label", text: engine.translate("Cost"), class: "cost-label" },
                                 { node: "span", text: engine.currencySymbol, class: "before" },
-                                { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
+                                { node: "input", name: "cost", type: "number", step: "0.01", min: "0", required: "" },
                                 { node: "br" }
                             ]
                         },
@@ -996,6 +1043,13 @@ document.querySelectorAll("#tab-picker a").forEach(e => e.addEventListener("clic
     e.target.classList.add("active");
     document.getElementById(target).removeAttribute("hidden");
     window.scrollTo(0, 0);
+}));
+
+document.querySelectorAll('.benefactor-selector').forEach(e => e.addEventListener("change", e => {
+    let value = e.target.value;
+
+    document.querySelectorAll('.benefactor-selector').forEach(e2 => e2.value = value);
+    engine.benefactor = value === "" ? null : value;
 }));
 
 if ('serviceWorker' in navigator) {
