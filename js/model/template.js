@@ -44,6 +44,7 @@ class Template {
         this[internal].amount = parseFloat(values.amount);
         this[internal].partial = values.partial;
         this[internal].recurrence = values.recurrence;
+        this[internal].benefactor = values.benefactor === undefined ? null : values.benefactor;
     }
 
     /**
@@ -217,6 +218,12 @@ class Template {
      */
     isDueInMonth(month){
         month = new Date(month.getFullYear(), month.getMonth(), 1);
+        if (this.startDate !== null && this.startDate > month)
+            return false;
+
+        if (this.endDate !== null && this.endDate < month)
+            return false;
+
         if (month instanceof Date) {
             switch (this.recurrence) {
                 case Recurrence.never:
@@ -244,18 +251,10 @@ class Template {
                         return false;
                     }
 
-                    if (this.endDate !== null && this.endDate < month) {
-                        return false;
-                    }
-
                     return month.getMonth() % 2 === this.startDate.getMonth() % 2;
 
                 case Recurrence.quarterly:
                     if (this.startDate === null) {
-                        return false;
-                    }
-
-                    if (this.endDate !== null && this.endDate < month) {
                         return false;
                     }
 
@@ -266,21 +265,9 @@ class Template {
                         return false;
                     }
 
-                    if (this.endDate !== null && this.endDate < month) {
-                        return false;
-                    }
-
                     return month.getMonth() % 6 === this.startDate.getMonth() % 6;
 
                 case Recurrence.annually:
-                    if (this.startDate === null) {
-                        return false;
-                    }
-
-                    if (this.endDate !== null && this.endDate < month) {
-                        return false;
-                    }
-
                     return month.getMonth() === this.startDate.getMonth();
             }
         } else {
@@ -334,6 +321,7 @@ class Template {
         return {
             id: this.id,
             name: this.name,
+            benefactor: this.benefactor,
             amount: this.amount,
             startDate: this.startDate,
             endDate: this.endDate,
