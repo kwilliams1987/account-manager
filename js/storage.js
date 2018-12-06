@@ -19,7 +19,8 @@ class MoneyStorage {
             locale: "en-GB",
             currency: "EUR",
             excessive: 0,
-            date: new Date()
+            date: new Date(),
+            benefactor: null
         };
 
         if (storage === undefined) {
@@ -70,6 +71,10 @@ class MoneyStorage {
 
         if (!isNaN(storage.excessive)) {
             this[internal].excessive = Math.max(storage.excessive, 0);
+        }
+
+        if (typeof(storage.benefactor) === "string" && storage.benefactor.length > 0) {
+            this[internal].benefactor = storage.benefactor;
         }
     }
 
@@ -123,6 +128,20 @@ class MoneyStorage {
         }
 
         this[internal].excessive = value;
+    }
+
+    get benefactor() {
+        return this[internal].benefactor;
+    }
+
+    set benefactor(value) {
+        if(value === null) {
+            this[internal].benefactor = value;
+        } else if (typeof(value) === "string" && value.length > 0) {
+            this[internal].benefactor = value;
+        } else {
+            throw TypeError("value must be null or a none-empty string");
+        }
     }
 
     /**

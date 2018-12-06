@@ -124,6 +124,21 @@ class PaymentEngine extends ITranslate {
         }
     }
 
+    /**
+     * Selected benefactor.
+     *
+     * @returns {?String}
+     */
+    get benefactor() {
+        return this[internal].storage.benefactor;
+    }
+
+    set benefactor(value) {
+        this[internal].storage.benefactor = value;
+        this[save]();
+    }
+
+
     get expected() {
         return this[internal].expected;
     }

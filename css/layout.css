@@ -377,7 +377,7 @@ div.input-group input + span.after {
 }
 
 dialog div.input-group {
-    height: 3.5em;
+    height: 4.1em;
     margin-bottom: 0.4em;
 }
 
@@ -439,7 +439,7 @@ dialog div.input-group span.before + input {
     }
 
     div.input-group label + input {
-        width: calc(100% - 4.4em);
+        width: calc(100% - 2.4em);
     }
 
     div.input-group label + select {
@@ -451,7 +451,7 @@ dialog div.input-group span.before + input {
         position: absolute;
         right: 0.3em;
         left: initial;
-        top: 1.7em;
+        top: 2.5em;
     }
 
     .desktop {

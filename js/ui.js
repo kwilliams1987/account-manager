@@ -97,36 +97,46 @@ const handler = async e => {
         let payments = values[0];
         let templates = values[1];
         let excessMod = 1 + (e.caller.excessive / 100);
+        let benefactor = engine.benefactor;
+        let benefactors = [];
 
         let outputs = [];
 
-        payments.filter(p => p.templateId.equalTo(Guid.empty)).forEach(p =>
-            outputs.push({
-                id: p.id,
-                name: p.name,
-                benefactor: null,
-                expected: null,
-                actual: p.amount,
-                paid: true,
-                excessive: true,
-                partial: false
-
-        }));
+        payments.filter(p => p.templateId.equalTo(Guid.empty)).forEach(p => {
+            if (benefactor === null) {
+                outputs.push({
+                    id: p.id,
+                    name: p.name,
+                    benefactor: null,
+                    expected: null,
+                    actual: p.amount,
+                    paid: true,
+                    excessive: true,
+                    partial: false
+                });
+            }
+        });
 
         templates.forEach(t => {
-            let r = {
-                id: t.id,
-                name: t.name,
-                benefactor: t.benefactor,
-                expected: t.amount,
-                actual: t.getCost(payments),
-                paid: t.isPaid(payments),
-                partial: t.partial
-            };
+            if (t.benefactor !== null && benefactors.indexOf(t.benefactor) === -1) {
+                benefactors.push(t.benefactor);
+            }
 
-            r.excessive = r.actual > r.expected * excessMod;
+            if (benefactor === null || benefactor === t.benefactor) {
+                let r = {
+                    id: t.id,
+                    name: t.name,
+                    benefactor: t.benefactor,
+                    expected: t.amount,
+                    actual: t.getCost(payments),
+                    paid: t.isPaid(payments),
+                    partial: t.partial
+                };
 
-            outputs.push(r);
+                r.excessive = r.actual > r.expected * excessMod;
+
+                outputs.push(r);
+            }
         });
 
         outputs.sort((o1, o2) => {
@@ -168,7 +178,7 @@ const handler = async e => {
                         <td>${amount === null ? '' : e.caller.formatCurrency(amount)}</td>
                         <td>${cost === 0 ? '' : e.caller.formatCurrency(cost)}</td>
                         <td>
-                            <button class="edit">${e.caller.translate("Edit")}</button>
+                            ${amount !== null ? `<button class="edit">${e.caller.translate("Edit")}</button>` : ''}
                             <button class="cancel">${e.caller.translate("Undo")}</button>
                         </td>
                     </tr>`.toHtml();
@@ -241,6 +251,35 @@ const handler = async e => {
             }
         });
 
+        if (benefactors.length === 0) {
+            document.querySelectorAll('.benefactor-selector').forEach(e => {
+                e.setAttribute("hidden", "");
+                e.clearChildren();
+                let all = document.createElement("option");
+                all.value = "";
+                all.innerHTML = engine.translate("All Benefactors");
+                e.appendChild(all);
+            });
+        } else {
+            document.querySelectorAll('.benefactor-selector').forEach(e => {
+                e.clearChildren();
+
+                let all = document.createElement("option");
+                all.value = "";
+                all.innerHTML = engine.translate("All Benefactors");
+                e.appendChild(all);
+
+                benefactors.sort().forEach(b => {
+                    let option = document.createElement("option");
+                    option.value = b;
+                    option.innerHTML = b;
+                    e.appendChild(option);
+                });
+
+                e.removeAttribute("hidden");
+            });
+        }
+
         if (pending.children.length === 0) {
             pending.appendChild(`<tr><td colspan="5" class="empty">${engine.translate("No pending bills!")}</td></tr>`.toHtml());
         } else {
@@ -291,6 +330,7 @@ const handler = async e => {
     document.getElementById('locale').value = e.caller.locale;
     document.getElementById('currency').value = e.caller.currency;
     document.getElementById('excessive').value = e.caller.excessive;
+    document.querySelectorAll('.benefactor-selector').forEach(s => s.value = e.caller.benefactor === null ? "" : e.caller.benefactor);
 
     document.body.classList.remove("loading");
     translate(e.caller);
@@ -1003,6 +1043,13 @@ document.querySelectorAll("#tab-picker a").forEach(e => e.addEventListener("clic
     e.target.classList.add("active");
     document.getElementById(target).removeAttribute("hidden");
     window.scrollTo(0, 0);
+}));
+
+document.querySelectorAll('.benefactor-selector').forEach(e => e.addEventListener("change", e => {
+    let value = e.target.value;
+
+    document.querySelectorAll('.benefactor-selector').forEach(e2 => e2.value = value);
+    engine.benefactor = value === "" ? null : value;
 }));
 
 if ('serviceWorker' in navigator) {

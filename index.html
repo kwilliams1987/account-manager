@@ -54,6 +54,7 @@
             <section id="tab-pending" role="tabpanel" class="loading">
                 <h2 class="translate">Pending Bills</h2>
                 <p class="controls">
+                    <select class="benefactor-selector" hidden></select>
                     <button class="schedule bill" class="translate">Schedule Bill</button>
                     <button class="unexpected bill" class="translate">Unexpected Bill</button>
                 </p>
@@ -74,6 +75,7 @@
             <section id="tab-income" role="tabpanel" class="loading" hidden>
                 <h2 class="translate">Planned Income</h2>
                 <p class="controls">
+                    <select class="benefactor-selector" hidden></select>
                     <button class="schedule income" class="translate">Schedule Income</button>
                     <button class="unexpected income" class="translate">Unexpected Income</button>
                 </p>
@@ -94,7 +96,9 @@
 
             <section id="tab-paid" role="tabpanel" class="loading" hidden>
                 <h2 class="translate">Paid Bills</h2>
-                <p class="controls">&nbsp;</p>
+                <p class="controls">
+                        <select class="benefactor-selector" hidden></select>
+                </p>
                 <table>
                     <thead>
                         <tr>
