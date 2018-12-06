@@ -168,6 +168,7 @@ const handler = async e => {
                         <td>${amount === null ? '' : e.caller.formatCurrency(amount)}</td>
                         <td>${cost === 0 ? '' : e.caller.formatCurrency(cost)}</td>
                         <td>
+                            <button class="edit">${e.caller.translate("Edit")}</button>
                             <button class="cancel">${e.caller.translate("Undo")}</button>
                         </td>
                     </tr>`.toHtml();
@@ -293,6 +294,10 @@ const handler = async e => {
 
     document.body.classList.remove("loading");
     translate(e.caller);
+
+    document.getElementById('tab-pending').classList.remove('loading');
+    document.getElementById('tab-income').classList.remove('loading');
+    document.getElementById('tab-paid').classList.remove('loading');
 }
 
 const translate = engine => document.querySelectorAll(".translate").forEach(e => {
@@ -533,6 +538,7 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                     let result = await new Promise(resolve => {
                         let dialog = elementTemplate({
                             node: "dialog",
+                            id: "schedule-dialog",
                             children: [
                                 { node: "h3", text: engine.translate("Edit Schedule") },
                                 {
@@ -541,22 +547,20 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                                         'submit': async e => {
                                             e.preventDefault();
 
-                                            /**
-                                             * @type {HTMLElement[]}
-                                             */
-                                            let children = Array.from(e.target.children);
-                                            let start = children.find(i => i.name === "start").value;
-                                            let end = children.find(i => i.name === "end").value;
+                                            let start = document.querySelector('#schedule-dialog [name="start"]').value;
+                                            let end = document.querySelector('#schedule-dialog [name="end"]').value;
+                                            let benefactor = document.querySelector('#schedule-dialog [name="benefactor"]').value;
 
                                             let result = {
                                                 id: template.id,
                                                 created: template.created,
-                                                name: children.find(i => i.name === "name").value,
-                                                amount: parseFloat(children.find(i => i.name === "cost").value) * (income ? -1 : 1),
+                                                name: document.querySelector('#schedule-dialog [name="name"]').value,
+                                                benefactor: benefactor  === '' ? null : benefactor,
+                                                amount: parseFloat(document.querySelector('#schedule-dialog [name="cost"]').value) * (income ? -1 : 1),
                                                 startDate: start === "" ? null : new Date(start + "-01"),
                                                 endDate: end === "" ? null : new Date(end + "-01"),
-                                                recurrence: parseInt(children.find(i => i.name === "recurrency").value),
-                                                partial: income ? false : children.find(i => i.name === "partial").checked
+                                                recurrence: parseInt(document.querySelector('#schedule-dialog [name="recurrency"]').value),
+                                                partial: income ? false : document.querySelector('#schedule-dialog [name="partial"]').checked
                                             };
 
                                             if (result.name + "" === "") {
@@ -592,7 +596,10 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                                     },
                                     children: [
                                         { node: "label", text: engine.translate("Name"), },
-                                        { node: "input", name: "name", value: template.name },
+                                        { node: "input", name: "name", required: "", value: template.name },
+                                        { node: "br" },
+                                        { node: "label", text: engine.translate("Benefactor"), },
+                                        { node: "input", name: "benefactor", value: template.benefactor === null ? '' : template.benefactor },
                                         { node: "br" },
                                         {
                                             node: "div",
@@ -600,7 +607,7 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                                             children: [
                                                 { node: "label", text: engine.translate("Cost"), class: "cost-label" },
                                                 { node: "span", text: engine.currencySymbol, class: "before" },
-                                                { node: "input", name: "cost", type: "number", step: "0.01", min: "0", value: template.amount },
+                                                { node: "input", name: "cost", type: "number", step: "0.01", min: "0", required: "", value: template.amount },
                                                 { node: "br" }
                                             ]
                                         },
@@ -668,13 +675,11 @@ document.querySelectorAll('main tbody').forEach(e => e.addEventListener('click',
                             dialog.querySelector('.cost-label').innerHTML = engine.translate("Value");
                             dialog.querySelector('[name="cost"]').value = template.amount * -1;
 
-                            let partial = dialog.querySelector('[name="partial"]'),
+                            let partial = dialog.querySelector('[name="partial"]').parentElement,
                                 elements = Array.from(partial.parentElement.children),
                                 index = elements.indexOf(partial),
-                                label = elements[index - 1],
                                 br = elements[index + 1];
 
-                            partial.parentElement.removeChild(label);
                             partial.parentElement.removeChild(br);
                             partial.parentElement.removeChild(partial);
                         }
@@ -848,6 +853,7 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
     let template = await new Promise(resolve => {
         let dialog = elementTemplate({
             node: "dialog",
+            id: "schedule-dialog",
             children: [
                 { node: "h3", text: engine.translate("Schedule Bill") },
                 {
@@ -856,20 +862,18 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
                         submit: async e => {
                             e.preventDefault();
 
-                            /**
-                             * @type {HTMLElement[]}
-                             */
-                            let children = Array.from(e.target.children);
-                            let start = children.find(i => i.name === "start").value;
-                            let end = children.find(i => i.name === "end").value;
+                            let start = document.querySelector('#schedule-dialog [name="start"]').value;
+                            let end = document.querySelector('#schedule-dialog [name="end"]').value;
+                            let benefactor = document.querySelector('#schedule-dialog [name="benefactor"]').value;
 
                             let result = {
-                                name: children.find(i => i.name === "name").value,
-                                amount: parseFloat(children.find(i => i.name === "cost").value),
+                                name: document.querySelector('#schedule-dialog [name="name"]').value,
+                                benefactor: benefactor  === '' ? null : benefactor,
+                                amount: parseFloat(document.querySelector('#schedule-dialog [name="cost"]').value),
                                 startDate: start === "" ? null : new Date(start + "-01"),
                                 endDate: end === "" ? null : new Date(end + "-01"),
-                                recurrence: parseInt(children.find(i => i.name === "recurrency").value),
-                                partial: income ? false : children.find(i => i.name === "partial").checked
+                                recurrence: parseInt(document.querySelector('#schedule-dialog [name="recurrency"]').value),
+                                partial: income ? false : document.querySelector('#schedule-dialog [name="partial"]').checked
                             };
 
                             if (result.name + "" === "") {
@@ -908,7 +912,10 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
                     },
                     children: [
                         { node: "label", text: engine.translate("Name") },
-                        { node: "input", name: "name" },
+                        { node: "input", name: "name", required: "" },
+                        { node: "br" },
+                        { node: "label", text: engine.translate("Benefactor") },
+                        { node: "input", name: "benefactor" },
                         { node: "br" },
                         {
                             node: "div",
@@ -916,7 +923,7 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
                             children: [
                                 { node: "label", text: engine.translate("Cost"), class: "cost-label" },
                                 { node: "span", text: engine.currencySymbol, class: "before" },
-                                { node: "input", name: "cost", type: "number", step: "0.01", min: "0" },
+                                { node: "input", name: "cost", type: "number", step: "0.01", min: "0", required: "" },
                                 { node: "br" }
                             ]
                         },
