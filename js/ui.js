@@ -70,6 +70,48 @@ String.prototype.toHtml = function () {
 }
 
 /**
+ * @this {Array<T>}
+ * @param {Function<T, K>} selector
+ * @return {Map<K, T>}
+ */
+Array.prototype.groupBy = function(selector) {
+    const result = new Map();
+
+    this.forEach(e => {
+        let key = selector(e);
+        let group = result.get(key);
+        if (group === undefined) {
+            result.set(key, [e]);
+        } else {
+            group.push(e);
+        }
+    });
+
+    return result;
+}
+
+/**
+ * @this {Array<T>}
+ * @param {Function<T, Promise<K>>} selector
+ * @return {Promise<Map<K, T>>}
+ */
+Array.prototype.groupByAsync = async function(selector) {
+    const result = new Map();
+
+    for (let e = 0; e < this.length; e++) {
+        let key = await selector(this[e]);
+        let group = result.get(key);
+        if (group === undefined) {
+            result.set(key, [this[e]]);
+        } else {
+            group.push(this[e]);
+        }
+    }
+
+    return result;
+}
+
+/**
  * @type {PaymentEngine}
  */
 let engine = {};
@@ -293,6 +335,8 @@ const handler = async e => {
 
     document.body.classList.remove("loading");
     translate(e.caller);
+
+    renderGraphs();
 }
 
 const translate = engine => document.querySelectorAll(".translate").forEach(e => {
@@ -311,6 +355,41 @@ const translate = engine => document.querySelectorAll(".translate").forEach(e =>
         e.innerHTML = translation;
     }
 });
+
+const renderGraphs = async () => {
+    if (!('Chart' in window))
+        return;
+
+    return;
+
+    let templates = new Map(),
+        startMonth = new Date(document.getElementById('graph-start').value + '-01'),
+        endMonth = new Date(document.getElementById('graph-end').value + "-01"),
+        dataset = await engine.getPayments(startMonth, endMonth);
+
+    dataset = await dataset.groupByAsync(async p => {
+        let name = p.name;
+        if (!p.templateId.equalTo(Guid.empty)) {
+            let template = templates.get(p.templateId.value);
+            if (template === undefined) {
+                template = await engine.getTemplate(p.templateId);
+                templates.set(template.id.value, template);
+            }
+
+            name = template.name + (template.benefactor ? " (" + template.benefactor + ")" : "");
+        }
+
+        return name;
+    });
+    console.log(dataset);
+
+    new Chart(document.getElementById('graph-expenses-per-month'), {
+        type: '',
+
+    })
+
+    document.getElementById('tab-graphs').classList.remove('loading');
+}
 
 let locales = document.getElementById("locale");
 let currencies = document.getElementById("currency");
@@ -338,7 +417,42 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.documentElement.classList.remove('unsupported');
     document.body.removeChild(document.getElementById('unsupportedBrowser'));
+
+    let date = new Date(Date.now());
+    document.getElementById('graph-end').value = date.toMonthString();
+
+    date.setFullYear(date.getFullYear() - 1);
+    document.getElementById('graph-start').value = date.toMonthString();
+
+    let graphs = document.createElement('script');
+    graphs.src = "js/vendor/Chart.bundle.min.js";
+    graphs.async = true;
+    graphs.onload = renderGraphs;
+
+    document.body.appendChild(graphs);
 });
+
+document.querySelectorAll('#graph-start, #graph-end').forEach(element => element.addEventListener("change", async e => {
+    let startDate = document.getElementById('graph-start').value,
+        endDate = document.getElementById('graph-end').value;
+
+    if (startDate >= endDate) {
+        switch (e.target.id) {
+            case "graph-start":
+                startDate = new Date(startDate + "-01");
+                endDate = new Date(startDate.setMonth(startDate.getMonth() + 1));
+                document.getElementById('graph-end').value = endDate.toMonthString();
+                break;
+            case "graph-end":
+                endDate = new Date(endDate + "-01");
+                startDate = new Date(endDate.setMonth(endDate.getMonth() - 1));
+                document.getElementById('graph-start').value = startDate.toMonthString();
+                break;
+        }
+    }
+
+    renderGraphs();
+}));
 
 document.getElementById('month').addEventListener('change', async e => {
     let value = e.target.value;

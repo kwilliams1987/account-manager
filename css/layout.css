@@ -263,6 +263,32 @@ dialog div.controls button:last-child {
     line-height: 2.1em;
 }
 
+#tab-graphs {
+
+}
+#tab-graphs .container {
+    position: relative;
+}
+
+#tab-graphs .container::after {
+    content: ' ';
+    display: block;
+    padding: 0 0 50%;
+}
+
+#tab-graphs .container .wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+}
+
+#tab-graphs .container .wrapper canvas {
+    width: 100%;
+    height: 100%;
+}
+
 [hidden] {
     display: none !important;
 }

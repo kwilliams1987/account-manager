@@ -48,6 +48,7 @@
             <a href="#tab-income" class="translate" role="tab">Planned Income</a>
             <a href="#tab-paid" class="translate" role="tab">Paid Bills</a>
             <a href="#tab-settings" class="translate" role="tab">Settings</a>
+            <a href="#tab-graphs" class="translate" role="tab">Statistics</a>
         </menu>
 
         <main>
@@ -135,6 +136,34 @@
                     <button id="import" class="translate">Restore Backup</button>
                 </p>
                 <input type="file" id="backup" accept=".money" hidden>
+            </section>
+
+            <section id="tab-graphs" role="tabpanel" class="loading" hidden>
+                <h2 class="translate">Statistics</h2>
+
+                <div class="input-group">
+                    <label for="graph-start" class="translate">Start Range</label>
+                    <input id="graph-start" type="month">
+                </div>
+
+                <div class="input-group">
+                    <label for="graph-end" class="translate">End Range</label>
+                    <input id="graph-end" type="month">
+                </div>
+
+                <h3 class="translate">Expenses by Month</h3>
+                <div class="container">
+                    <div class="wrapper">
+                        <canvas id="graph-expenses-per-month" width="792" height="528"></canvas>
+                    </div>
+                </div>
+
+                <h3 class="translate">Expenses by Category</h3>
+                <div class="container">
+                    <div class="wrapper">
+                        <canvas id="graph-expenses-per-category" width="792" height="528"></canvas>
+                    </div>
+                </div>
             </section>
         </main>
 
