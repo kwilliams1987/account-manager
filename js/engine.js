@@ -124,6 +124,21 @@ class PaymentEngine extends ITranslate {
         }
     }
 
+    /**
+     * Selected benefactor.
+     *
+     * @returns {?String}
+     */
+    get benefactor() {
+        return this[internal].storage.benefactor;
+    }
+
+    set benefactor(value) {
+        this[internal].storage.benefactor = value;
+        this[save]();
+    }
+
+
     get expected() {
         return this[internal].expected;
     }
@@ -137,12 +152,38 @@ class PaymentEngine extends ITranslate {
     }
 
     /**
-     * Get payments for currently selected month.
+     * Get payments for provided month(s) or currently selected if not provided..
      *
+     * @param {?Date} start
+     * @param {?Date} end
      * @return {Promise<Payment[]>}
      */
-    async getPayments() {
-        return this[internal].storage.getPaymentsByMonth(this.month);
+    async getPayments(start = null, end = null) {
+        if (start === null) {
+            start = new Date(this.month);
+        }
+
+        if (!(start instanceof Date)) {
+            throw new TypeError("start is not a date.");
+        }
+
+        if (end === null) {
+            end = new Date(start);
+        }
+
+        if (!(end instanceof Date)) {
+            throw new TypeError("end is not a date.");
+        }
+
+        let months = [], current = start;
+        while (current <= end) {
+            months.push(this[internal].storage.getPaymentsByMonth(current))
+            current = new Date(current.setMonth(current.getMonth() + 1));
+        }
+
+        return Promise.all(months).then(result => {
+            return [].concat(... result);
+        });
     }
 
     /**
