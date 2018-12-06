@@ -14,6 +14,8 @@ Features:
   * Quarterly
   * Bi-annually
   * Annually
+* Group payments by an entity (such as a person or category).
+  * Filter current month by grouping.
 * Save and restore of backups
   * Password protected.
   * Encrypted with AES-GCM using 256 bit key length.
