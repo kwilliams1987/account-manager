@@ -47,6 +47,7 @@
             <a href="#tab-pending" class="translate active" role="tab">Pending Bills</a>
             <a href="#tab-income" class="translate" role="tab">Planned Income</a>
             <a href="#tab-paid" class="translate" role="tab">Paid Bills</a>
+            <a href="#tab-graphs" class="translate" role="tab" disabled>Statistics</a>
             <a href="#tab-settings" class="translate" role="tab">Settings</a>
         </menu>
 
@@ -113,6 +114,36 @@
                 </table>
             </section>
 
+            <section id="tab-graphs" role="tabpanel" class="loading" hidden>
+                <h2 class="translate">Statistics</h2>
+
+                <div class="input-group">
+                    <label for="graph-start" class="translate">Start Range</label>
+                    <input id="graph-start" type="month">
+                </div>
+
+                <div class="input-group">
+                    <label for="graph-end" class="translate">End Range</label>
+                    <input id="graph-end" type="month">
+                </div>
+
+                <div class="input-group">
+                    <label for="graph-scheduled" class="translate">Scheduled Only</label>
+                    <input id="graph-scheduled" type="checkbox" checked>
+                </div>
+
+                <div class="input-group">
+                    <label for="graph-summarize" class="translate">Summarise Small</label>
+                    <input id="graph-summarize" type="checkbox" checked>
+                </div>
+
+                <h3 class="translate">Expenses by Category</h3>
+                <canvas id="graph-expenses-per-category" width="792" height="528"></canvas>
+
+                <h3 id="title-expenses-per-month" class="translate" hidden>Expenses by Month</h3>
+                <canvas id="graph-expenses-per-month" width="792" height="528" hidden></canvas>
+            </section>
+
             <section id="tab-settings" role="tabpanel" hidden>
                 <h2 class="translate">Settings</h2>
 
@@ -170,6 +201,7 @@
             <small><a rel="license" href="https://github.com/kwilliams1987/account-manager/blob/master/LICENSE">License</a></small>
         </footer>
 
+        <script defer type="module" src="js/utils/extensions.js"></script>
         <script defer type="module" src="js/ui.js"></script>
     </body>
 </html>

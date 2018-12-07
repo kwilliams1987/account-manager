@@ -218,8 +218,14 @@ class Template {
      */
     isDueInMonth(month){
         month = new Date(month.getFullYear(), month.getMonth(), 1);
-        if (this.startDate !== null && this.startDate > month)
-            return false;
+        if (this.startDate !== null)
+        {
+            if (this.startDate.getFullYear() > month.getFullYear())
+                return false;
+
+            if (this.startDate.getFullYear() === month.getFullYear() && this.startDate.getMonth() > month.getMonth())
+                return false;
+        }
 
         if (this.endDate !== null && this.endDate < month)
             return false;
