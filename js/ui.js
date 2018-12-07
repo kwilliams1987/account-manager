@@ -2,72 +2,10 @@
 
 import { PaymentEngine } from './engine.js';
 import { elementTemplate, DialogManager } from './dialogs.js';
+import { Payment } from './model/payment.js';
 import { Template } from './model/template.js';
 import { Recurrence } from './model/recurrence.js';
 import { Guid } from './utils/guid.js';
-
-if ('HTMLDialogElement' in window) {
-    if (!('showModal' in HTMLDialogElement.prototype)) {
-        HTMLDialogElement.prototype.showModal = function () {
-            if (this.attributes.open !== undefined) {
-                throw new InvalidStateError("Dialog is already open.");
-            }
-
-            this.setAttribute('open', '');
-        }
-    }
-
-    if (!('close' in HTMLDialogElement.prototype)) {
-        HTMLDialogElement.prototype.close = function () {
-            if (this.attributes.open === undefined) {
-                throw new InvalidStateError("Dialog is already closed.");
-            }
-
-            this.removeAttribute('open');
-        }
-    }
-} else {
-    HTMLElement.prototype.showModal = function () {
-        if (this.attributes.open !== undefined) {
-            throw new InvalidStateError("Dialog is already open.");
-        }
-
-        this.setAttribute('open', '');
-    }
-
-    HTMLElement.prototype.close = function () {
-        if (this.attributes.open === undefined) {
-            throw new InvalidStateError("Dialog is already closed.");
-        }
-
-        this.removeAttribute('open');
-    }
-}
-
-HTMLElement.prototype.clearChildren = function() {
-    while(this.firstChild) {
-        this.removeChild(this.firstChild);
-    }
-}
-
-Date.prototype.toMonthString = function () {
-    var result = this.getFullYear() + "-";
-    var month = this.getMonth() + 1;
-    if (month < 10)
-        result += "0";
-
-    result += month;
-    return result;
-}
-
-/**
- * @returns {HTMLElement}
- */
-String.prototype.toHtml = function () {
-    let template = document.createElement('template')
-    template.innerHTML = this.trim();
-    return template.content.firstChild;
-}
 
 /**
  * @type {PaymentEngine}
@@ -338,6 +276,8 @@ const handler = async e => {
     document.getElementById('tab-pending').classList.remove('loading');
     document.getElementById('tab-income').classList.remove('loading');
     document.getElementById('tab-paid').classList.remove('loading');
+
+    renderGraphs();
 }
 
 const translate = engine => document.querySelectorAll(".translate").forEach(e => {
@@ -356,6 +296,231 @@ const translate = engine => document.querySelectorAll(".translate").forEach(e =>
         e.innerHTML = translation;
     }
 });
+
+const maxSummaryDataPoints = 10;
+const renderGraphs = async () => {
+    if (!('Chart' in window)) {
+        document.querySelector('[href="#tab-graphs"]').setAttribute('hidden', '');
+        if (document.querySelector('[href="#tab-graphs"]').classList.contains('active')) {
+            document.querySelector('[href="#tab-pending"]').click();
+        }
+        return;
+    } else {
+        document.querySelector('[href="#tab-graphs"]').removeAttribute('hidden');
+    }
+
+    /**
+     * @type {Map<String, Template} templates
+     */
+    let templates = new Map(),
+        startMonth = new Date(document.getElementById('graph-start').value + '-01'),
+        endMonth = new Date(document.getElementById('graph-end').value + "-01"),
+        dataset = await engine.getPayments(startMonth, endMonth),
+        scheduledOnly = document.getElementById('graph-scheduled').checked,
+        summarize = document.getElementById('graph-summarize').checked,
+        colorsets = new Map();
+
+    const rand = (max, min = 0) => Math.floor(Math.random() * (max - min + 1) + min);
+
+    const getSeriesColor = name => {
+        let color = colorsets.get(name);
+        if (color === undefined) {
+            color = `rgb(${rand(255)},${rand(255)},${rand(255)})`;
+            colorsets.set(name, color);
+        }
+        return color;
+    }
+
+    /**
+     * @type {Map<String, Payment[]>} grouping
+     */
+    let grouping = await dataset
+        .filter(p => p.amount > 0 && (!scheduledOnly || !p.templateId.equalTo(Guid.empty)))
+        .groupByAsync(async p => {
+            let name = p.name;
+            if (!p.templateId.equalTo(Guid.empty)) {
+                let template = templates.get(p.templateId.value);
+                if (template === undefined) {
+                    template = await engine.getTemplate(p.templateId);
+                    templates.set(template.id.value, template);
+                }
+
+                name = template.name + (template.benefactor ? " (" + template.benefactor + ")" : "");
+            }
+
+            return name;
+        });
+
+    let lineData = Array.from(grouping.map(p => ({ x: p.date, y: p.amount })))
+        .map(mapping => {
+            let result = {
+                label: mapping[0],
+                fill: false,
+                borderColor: getSeriesColor(mapping[0]),
+                backgroundColor: getSeriesColor(mapping[0]),
+                data: []
+            };
+
+            mapping[1].forEach(r => {
+                let existing = result.data.find(d => d.x.getFullYear() === r.x.getFullYear() && d.x.getMonth() === r.x.getMonth());
+                if (existing === undefined) {
+                    existing = {
+                        x: r.x,
+                        y: 0
+                    }
+
+                    result.data.push(existing);
+                }
+
+                existing.y += r.y;
+            });
+
+            return result;
+        });
+
+    let pieData = { datasets:[{ data:[], backgroundColor:[] }], labels: [] };;
+
+    if (summarize) {
+        let aggregates = Array.from(grouping)
+            .map(g => {
+                let r = {
+                    key: g[0],
+                    total: g[1].reduce((a, p) => a + p.amount, 0),
+                    count: Array.from(g[1].groupBy(t => "" + t.date.getFullYear() + t.date.getMonth())).length
+                };
+
+                r.average = r.total / r.count;
+                return r;
+            });
+
+        let totalDataPoints = aggregates.reduce((a, d) => a + d.count, 0);
+        let totalDataSets = aggregates.length;
+        let averageDataPoints = totalDataPoints / totalDataSets;
+        let maxPoints = totalDataSets < maxSummaryDataPoints + 2 ? totalDataPoints : maxSummaryDataPoints;
+
+        aggregates = aggregates.sort((a, b) => {
+            if (a.count > averageDataPoints && b.count <= averageDataPoints) {
+                return -1;
+            }
+
+            if (a.count <= averageDataPoints && b.count > averageDataPoints) {
+                return 1;
+            }
+
+            return b.average - a.average;
+        });
+
+        let bigvalues = aggregates.slice(0, maxPoints).map(v => v.key);
+
+        let otherValues = [];
+        let lineValues = [{
+            label: engine.translate("Other Payments"),
+            fill: false,
+            borderColor: getSeriesColor(engine.translate("Other Payments")),
+            backgroundColor: getSeriesColor(engine.translate("Other Payments")),
+            data: null
+        }];
+        lineData.forEach(e => {
+            if (bigvalues.indexOf(e.label) > -1) {
+                lineValues.push(e);
+            } else {
+                e.data.forEach(p => {
+                    var c = otherValues.find(o => o.x.getFullYear() === p.x.getFullYear() && o.x.getMonth() === p.x.getMonth());
+                    if (c === undefined) {
+                        c = { x: p.x, y: 0 };
+                        otherValues.push(c);
+                    }
+                    c.y += p.y;
+                });
+            }
+        });
+        lineValues[0].data = otherValues.sort((a, b) => a.x - b.x);
+
+        lineData = lineValues;
+
+        pieData.labels.push(engine.translate("Other Payments"));
+        pieData.datasets[0].data.push(0);
+        pieData.datasets[0].backgroundColor.push(getSeriesColor(engine.translate("Other Payments")));
+
+        grouping.forEach((values, label) => {
+            let sum = values.reduce((a, v) => a + v.amount, 0);
+
+            if (bigvalues.indexOf(label) > -1) {
+                pieData.labels.push(label);
+                pieData.datasets[0].data.push(sum);
+                pieData.datasets[0].backgroundColor.push(getSeriesColor(label));
+            } else {
+                pieData.datasets[0].data[0] += sum;
+            }
+        });
+    } else {
+        grouping.forEach((values, label) => {
+            let sum = values.reduce((a, v) => a + v.amount, 0);
+
+            pieData.labels.push(label);
+            pieData.datasets[0].data.push(sum);
+            pieData.datasets[0].backgroundColor.push(getSeriesColor(label));
+        });
+    }
+
+    var lineCanvas = document.getElementById('graph-expenses-per-month');
+    if (lineCanvas.chart === undefined) {
+        lineCanvas.chart = new Chart(lineCanvas, {
+            type: 'line',
+            data: {
+                datasets: lineData
+            },
+            options: {
+                tooltips: {
+                    callbacks: {
+                        label: (item, data) => data.datasets[item.datasetIndex].label + ": " + engine.formatCurrency(item.yLabel)
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        type: "time",
+                        time: {
+                            units: 'month',
+                            unitStepSize: 1
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: (value, index, values) => {
+                                return engine.formatCurrency(value);
+                            }
+                        }
+                    }]
+                }
+            }
+        });
+    } else {
+        lineCanvas.chart.data.datasets = lineData;
+        lineCanvas.chart.update();
+    }
+
+    // TODO: Pie doesn't work.
+    let pieCanvas = document.getElementById('graph-expenses-per-category');
+    if (pieCanvas.chart === undefined) {
+        pieCanvas.chart = new Chart(pieCanvas, {
+            type: "pie",
+            data: pieData,
+            options: {
+                tooltips: {
+                    callbacks: {
+                        label: (item, data) => data.labels[item.index] + ": " + engine.formatCurrency(data.datasets[item.datasetIndex].data[item.index])
+                    }
+                }
+            }
+        });
+    } else {
+        pieCanvas.chart.data = pieData;
+        pieCanvas.chart.update();
+    }
+
+    document.getElementById('tab-graphs').classList.remove('loading');
+}
 
 let locales = document.getElementById("locale");
 let currencies = document.getElementById("currency");
@@ -383,7 +548,50 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.documentElement.classList.remove('unsupported');
     document.body.removeChild(document.getElementById('unsupportedBrowser'));
+
+    let date = new Date(Date.now());
+    document.getElementById('graph-end').value = date.toMonthString();
+    document.getElementById('graph-start').value = date.toMonthString();
+
+    let graphs = document.createElement('script');
+    graphs.src = "js/vendor/Chart.bundle.min.js";
+    graphs.async = true;
+    graphs.onload = renderGraphs;
+
+    document.body.appendChild(graphs);
 });
+
+document.getElementById("graph-end").setAttribute('max', new Date().toMonthString());
+document.querySelectorAll('#graph-start, #graph-end').forEach(element => element.addEventListener("blur", async e => {
+    let startDate = document.getElementById('graph-start').value,
+        endDate = document.getElementById('graph-end').value;
+
+    if (startDate > endDate) {
+        switch (e.target.id) {
+            case "graph-start":
+                endDate = startDate;
+                document.getElementById('graph-end').value = startDate;
+                break;
+            case "graph-end":
+                startDate = endDate;
+                document.getElementById('graph-start').value = endDate;
+                break;
+        }
+    }
+
+    if (startDate === endDate) {
+        document.getElementById('title-expenses-per-month').setAttribute('hidden', '');
+        document.getElementById('graph-expenses-per-month').setAttribute('hidden', '');
+    } else {
+        document.getElementById('title-expenses-per-month').removeAttribute('hidden');
+        document.getElementById('graph-expenses-per-month').removeAttribute('hidden');
+    }
+
+    renderGraphs();
+}));
+
+document.getElementById('graph-scheduled').addEventListener('change', async () => renderGraphs());
+document.getElementById('graph-summarize').addEventListener('change', async () => renderGraphs());
 
 document.getElementById('month').addEventListener('change', async e => {
     let value = e.target.value;

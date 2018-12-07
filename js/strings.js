@@ -151,7 +151,15 @@ Strings[internal] = {
         "Please provide a valid backup name.": "Please provide a valid backup name.",
         "Offline mode is not available.": "Offline mode is not available.",
         "Benefactor": "Benefactors",
-        "All Benefactors": "All Benefactors"
+        "All Benefactors": "All Benefactors",
+        "Statistics": "Statistics",
+        "Start Range": "Start Range",
+        "End Range": "End Range",
+        "Scheduled Only": "Scheduled only",
+        "Expenses by Month": "Expenses by Month",
+        "Expenses by Category": "Expenses by Category",
+        "Summarise Small": "Group small payments",
+        "Other Payments": "Other Payments"
     },
     "en-US": {
         "__CURRENCY__": "USD",
@@ -241,7 +249,15 @@ Strings[internal] = {
         "Please provide a valid backup name.": "Please provide a valid backup name.",
         "Offline mode is not available.": "Offline mode is not available.",
         "Benefactor": "Benefactors",
-        "All Benefactors": "All Benefactors"
+        "All Benefactors": "All Benefactors",
+        "Statistics": "Statistics",
+        "Start Range": "Start Range",
+        "End Range": "End Range",
+        "Scheduled Only": "Scheduled only",
+        "Expenses by Month": "Expenses by Month",
+        "Expenses by Category": "Expenses by Category",
+        "Summarise Small": "Group small payments",
+        "Other Payments": "Other Payments"
     },
     "nl-NL": {
         "__CURRENCY__": "EUR",
@@ -331,7 +347,15 @@ Strings[internal] = {
         "Please provide a valid backup name.": "Dit is geen geldige bestandsnaam",
         "Offline mode is not available.": "Offline-modus is niet beschikbaar.",
         "Benefactor": "Bij betrokken",
-        "All Benefactors": "Allemaal"
+        "All Benefactors": "Allemaal",
+        "Statistics": "Statistieken",
+        "Start Range": "Begin datum",
+        "End Range": "Einddatum",
+        "Scheduled Only": "Allen geplanned",
+        "Expenses by Month": "Uitgaven per maand",
+        "Expenses by Category": "Uitgaven per categorie",
+        "Summarise Small": "Groep kleine betalingen",
+        "Other Payments": "Andere betaalingen"
     },
 }
 
