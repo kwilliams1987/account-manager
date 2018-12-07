@@ -20,7 +20,7 @@ Features:
   * All done on the client side using Javascript `crypto.subtle` package.
 
 To-do:
-* Reporting and analysis.
+* More reporting and analysis.
 * Other backup methods / cross-device synchronization.
   * Encrypt to cloud storage.
   * Restore from cloud storage.
