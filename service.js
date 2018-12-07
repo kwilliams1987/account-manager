@@ -1,4 +1,4 @@
-const version = "1.11.0";
+const version = "1.11.2";
 
 const cacheId = "FINANCE-" + version;
 const files = [
@@ -32,6 +32,7 @@ const files = [
     'js/model/payment.js',
     'js/model/recurrence.js',
     'js/model/template.js',
+    'js/utils/extensions.js',
     'js/utils/encryption.js',
     'js/utils/guid.js',
     'js/dialogs.js',
