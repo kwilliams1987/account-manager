@@ -1,4 +1,4 @@
-const version = "1.11.2";
+const version = "1.12.10";
 
 const cacheId = "FINANCE-" + version;
 const files = [
@@ -44,7 +44,29 @@ const files = [
     './',
     'index.html'
 ];
+const cdnFiles = [
+    {
+        'url': 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js',
+        'sri': 'sha256-MZo5XY1Ah7Z2Aui4/alkfeiq3CopMdV/bbkc/Sh41+s='
+    }
+];
 
-self.addEventListener('install', e => e.waitUntil(caches.open(cacheId).then(cache => cache.addAll(files))));
+self.addEventListener('install', e => e.waitUntil(
+    caches.open(cacheId).then(async cache => {
+        await cache.addAll(files);
+        for (let f = 0; f < cdnFiles.length; f++) {
+            let request = new Request({
+                method: "GET",
+                url: cdnFiles[f].url,
+                integrity: cdnFiles[f].sri,
+                mode: "cors",
+                credentials: "omit",
+                cache: "default"
+            });
+
+            let response = await fetch(cdnFiles[f].url, request);
+            await cache.put(request, response);
+        }
+    })));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(name => name !== cacheId).map(name => caches.delete(name))))));
 self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(response => response ? response : fetch(e.request))));

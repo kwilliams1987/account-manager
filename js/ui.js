@@ -7,6 +7,10 @@ import { Template } from './model/template.js';
 import { Recurrence } from './model/recurrence.js';
 import { Guid } from './utils/guid.js';
 
+const ThirdParty = {
+    ChartJs: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"
+}
+
 /**
  * @type {PaymentEngine}
  */
@@ -554,7 +558,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('graph-start').value = date.toMonthString();
 
     let graphs = document.createElement('script');
-    graphs.src = "js/vendor/Chart.bundle.min.js";
+    graphs.src = ThirdParty.ChartJs;
     graphs.async = true;
     graphs.onload = renderGraphs;
 
