@@ -166,6 +166,11 @@
                 <p class="translate">All backups are encrypted with 256 bit AES-GCM encryption. You must provide a minimum 6 character password.</p>
                 <p class="translate">Please keep your backup passwords safe, they are not stored anywhere and your backup is useless without it.</p>
                 <p class="controls">
+                    <select id="exportType">
+                        <option value="1">File</option>
+                        <option value="2">OneDrive</option>
+                        <option value="3" disabled>Dropbox</option>
+                    </select>
                     <button id="export" class="translate">Create Backup</button>
                     <button id="import" class="translate">Restore Backup</button>
                 </p>

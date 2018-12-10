@@ -8,7 +8,9 @@ import { Recurrence } from './model/recurrence.js';
 import { Guid } from './utils/guid.js';
 
 const ThirdParty = {
-    ChartJs: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"
+    ChartJs: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js",
+    OneDrive: { "url": "https://js.live.net/v7.2/OneDrive.js", "appId": "00000000482535B8" },
+    Dropbox: "https://www.dropbox.com/static/api/2/dropins.js"
 }
 
 /**
@@ -21,6 +23,18 @@ let engine = {};
  * @type {DialogManager}
  */
 let dialogs = {};
+
+const loadScript = (source, handler) => {
+    let script = document.createElement('script');
+    script.src = source;
+    script.async = true;
+    script.onload = () => {
+        document.body.removeChild(script);
+        handler();
+    }
+
+    document.body.appendChild(script);
+}
 
 const handler = async e => {
     document.getElementById('expected').value = e.caller.formatCurrency(e.caller.expected);
@@ -557,12 +571,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('graph-end').value = date.toMonthString();
     document.getElementById('graph-start').value = date.toMonthString();
 
-    let graphs = document.createElement('script');
-    graphs.src = ThirdParty.ChartJs;
-    graphs.async = true;
-    graphs.onload = renderGraphs;
-
-    document.body.appendChild(graphs);
+    loadScript(ThirdParty.ChartJs, renderGraphs);
 });
 
 document.getElementById("graph-end").setAttribute('max', new Date().toMonthString());
@@ -672,13 +681,44 @@ document.getElementById('export').addEventListener('click', async e => {
         let encrypted = await engine.export(password),
             blob = new Blob([encrypted], { type: "binary/octet-stream" });
 
-        let link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = filename + ".money";
+        switch (document.getElementById('exportType').value) {
+            case "1":
+                let link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = filename + ".money";
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                break;
+            case "2":
+                let reader = new FileReader();
+                reader.onload = result => {
+                    let uri = result.target.result;
+                    let fail = async e => await dialogs.alert("Save to {0} failed!", "OneDrive");
+
+                    let onedriveSave = () => {
+                        OneDrive.save({
+                            clientId: ThirdParty.OneDrive.appId,
+                            action: "save",
+                            sourceUri: uri,
+                            fileName: filename + ".money",
+                            openInNewWindow: false,
+                            success: async () => await dialogs.alert("Save to {0} successful!", "OneDrive"),
+                            progress: p => console.log("Progress: " + p + "%"),
+                            cancel: fail,
+                            error: fail
+                        });
+                    }
+
+                    if (typeof OneDrive === "undefined") {
+                        loadScript(ThirdParty.OneDrive.url, onedriveSave);
+                    } else {
+                        onedriveSave();
+                    }
+                };
+                reader.readAsDataURL(blob);
+        }
     } catch (e) {
         await dialogs.alert("Export failed: {0}.", e.message);
     }

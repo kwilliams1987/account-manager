@@ -1,4 +1,4 @@
-const version = "1.12.10";
+const version = "1.13.6";
 
 const cacheId = "FINANCE-" + version;
 const files = [
@@ -48,12 +48,20 @@ const cdnFiles = [
     {
         'url': 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js',
         'sri': 'sha256-MZo5XY1Ah7Z2Aui4/alkfeiq3CopMdV/bbkc/Sh41+s='
+    },
+    {
+        'url': 'https://js.live.net/v7.2/OneDrive.js',
+        'sri': 'sha384-W9fN+ht/ElNDVYm2aEb17InqSgxzUnut12MGYtrJgDDkjyatE/N7Tnc1RnbuAhE9'
+    },
+    {
+        'url': 'https://www.dropbox.com/static/api/2/dropins.js',
+        'sri': 'sha384-Fg5gpdUxYEdg1fc7auoCggOwB680DOAFhjbyXsF9qjd6iJGyDwUlOfE0hC61XNnL'
     }
 ];
 
 self.addEventListener('install', e => e.waitUntil(
-    caches.open(cacheId).then(async cache => {
-        await cache.addAll(files);
+    caches.open(cacheId).then(cache => {
+        let promises = [];
         for (let f = 0; f < cdnFiles.length; f++) {
             let request = new Request({
                 method: "GET",
@@ -64,9 +72,11 @@ self.addEventListener('install', e => e.waitUntil(
                 cache: "default"
             });
 
-            let response = await fetch(cdnFiles[f].url, request);
-            await cache.put(request, response);
+            promises.push(fetch(cdnFiles[f].url, request).then(response => cache.put(request, response)));
         }
+
+        promises.push(cache.addAll(files));
+        return Promise.all(promises);
     })));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(name => name !== cacheId).map(name => caches.delete(name))))));
 self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(response => response ? response : fetch(e.request))));
