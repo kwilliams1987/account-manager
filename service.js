@@ -1,4 +1,4 @@
-const version = "1.13.6";
+const version = "1.13.7";
 
 const cacheId = "FINANCE-" + version;
 const files = [
@@ -56,6 +56,10 @@ const cdnFiles = [
     {
         'url': 'https://www.dropbox.com/static/api/2/dropins.js',
         'sri': 'sha384-Fg5gpdUxYEdg1fc7auoCggOwB680DOAFhjbyXsF9qjd6iJGyDwUlOfE0hC61XNnL'
+    },
+    {
+        'url': 'https://apis.google.com/js/api.js',
+        'sri': false
     }
 ];
 
@@ -63,14 +67,26 @@ self.addEventListener('install', e => e.waitUntil(
     caches.open(cacheId).then(cache => {
         let promises = [];
         for (let f = 0; f < cdnFiles.length; f++) {
-            let request = new Request({
-                method: "GET",
-                url: cdnFiles[f].url,
-                integrity: cdnFiles[f].sri,
-                mode: "cors",
-                credentials: "omit",
-                cache: "default"
-            });
+            let request = null;
+
+            if (cdnFiles[f].sri) {
+                request = new Request({
+                    method: "GET",
+                    url: cdnFiles[f].url,
+                    integrity: cdnFiles[f].sri,
+                    mode: "cors",
+                    credentials: "omit",
+                    cache: "default"
+                });
+            } else {
+                request = new Request({
+                    method: "GET",
+                    url: cdnFiles[f].url,
+                    mode: "cors",
+                    credentials: "omit",
+                    cache: "default"
+                });
+            }
 
             promises.push(fetch(cdnFiles[f].url, request).then(response => cache.put(request, response)));
         }
