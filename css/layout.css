@@ -307,6 +307,20 @@ dialog div.controls button:last-child {
 
 #unsupportedBrowser {
     display: none;
+    z-index: 1000;
+    color: black;
+    background: white;
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    padding: 30px;
+    text-align: center;
+}
+
+#unsupportedBrowser a {
+    white-space: nowrap;
 }
 
 .unsupported aside,

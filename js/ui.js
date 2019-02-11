@@ -531,6 +531,9 @@ let currencies = document.getElementById("currency");
 let excessive = document.getElementById("excessive");
 
 document.addEventListener("DOMContentLoaded", async () => {
+    if (window.crypto === undefined || window.crypto.getRandomValues === undefined)
+        return;
+
     engine = new PaymentEngine();
     dialogs = new DialogManager(engine);
 

@@ -1,6 +1,8 @@
 # Account Manager
 A purely client-side finance manager built on a framework-less JavaScript core using local storage.
 
+You can try out the code here: https://kwilliams1987.github.io/account-manager/
+
 ## Features:
 * Entirely client side.
   * All data stored in localStorage.
@@ -27,5 +29,3 @@ A purely client-side finance manager built on a framework-less JavaScript core u
 
 ## Third-Party libraries:
 * [ChartJS](https://www.chartjs.org/) (MIT License)
-
-You can try out the code here: https://kwilliams1987.github.io/account-manager/
