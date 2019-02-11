@@ -27,5 +27,6 @@ A purely client-side finance manager built on a framework-less JavaScript core u
 
 ## Third-Party libraries:
 * [ChartJS](https://www.chartjs.org/) (MIT License)
+* [Dropbox JavaScript SDK](https://github.com/dropbox/dropbox-sdk-js) (MIT License)
 
 You can try out the code here: https://kwilliams1987.github.io/account-manager/

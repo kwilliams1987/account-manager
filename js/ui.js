@@ -682,6 +682,7 @@ document.getElementById('export').addEventListener('click', async e => {
             blob = new Blob([encrypted], { type: "binary/octet-stream" });
 
         switch (document.getElementById('exportType').value) {
+            // Download
             case "1":
                 let link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
@@ -691,11 +692,15 @@ document.getElementById('export').addEventListener('click', async e => {
                 link.click();
                 document.body.removeChild(link);
                 break;
+            // OneDrive
             case "2":
+                await dialog.alert("Not yet implemented.");
+                return;
+
                 let reader = new FileReader();
                 reader.onload = result => {
                     let uri = result.target.result;
-                    let fail = async e => await dialogs.alert("Save to {0} failed!", "OneDrive");
+                    let fail = async _ => await dialogs.alert("Save to {0} failed!", "OneDrive");
 
                     let onedriveSave = () => {
                         OneDrive.save({
@@ -718,6 +723,11 @@ document.getElementById('export').addEventListener('click', async e => {
                     }
                 };
                 reader.readAsDataURL(blob);
+                break;
+            // Dropbox
+            case "3":
+                await dialog.alert("Not yet implemented.");
+                break;
         }
     } catch (e) {
         await dialogs.alert("Export failed: {0}.", e.message);
