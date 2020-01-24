@@ -1224,14 +1224,9 @@ document.querySelectorAll('button.schedule').forEach(e => e.addEventListener('cl
             dialog.querySelector('h3').innerHTML = engine.translate("Schedule Income");
             dialog.querySelector('.cost-label').innerHTML = engine.translate("Value");
 
-            let partial = dialog.querySelector('[name="partial"]'),
-                elements = Array.from(partial.parentElement.children),
-                index = elements.indexOf(partial),
-                label = elements[index - 1],
-                br = elements[index + 1];
+            let partial = dialog.querySelector('[name="partial"]').parentElement;
 
-            partial.parentElement.removeChild(label);
-            partial.parentElement.removeChild(br);
+            partial.parentElement.removeChild(partial.nextSibling);
             partial.parentElement.removeChild(partial);
         }
 
