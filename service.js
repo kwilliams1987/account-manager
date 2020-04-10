@@ -1,4 +1,4 @@
-const version = "1.12.10a";
+const version = "1.13.0";
 
 const cacheId = "FINANCE-" + version;
 const files = [
@@ -44,12 +44,10 @@ const files = [
     './',
     'index.html'
 ];
-const cdnFiles = [
-    {
-        'url': 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js',
-        'sri': 'sha256-MZo5XY1Ah7Z2Aui4/alkfeiq3CopMdV/bbkc/Sh41+s='
-    }
-];
+const cdnFiles = [{
+    'url': 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js',
+    'sri': 'sha256-MZo5XY1Ah7Z2Aui4/alkfeiq3CopMdV/bbkc/Sh41+s='
+}];
 
 self.addEventListener('install', e => e.waitUntil(
     caches.open(cacheId).then(async cache => {
