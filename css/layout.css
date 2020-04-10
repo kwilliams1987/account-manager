@@ -1,5 +1,4 @@
 @import url('fonts.css');
-
 html {
     font-family: 'Open Sans', sans-serif;
     font-size: 0.9em;
@@ -82,9 +81,9 @@ aside[role="dialog"] button {
     min-width: 5em;
 }
 
-body > aside[role="region"],
-body > menu,
-body > footer {
+body>aside[role="region"],
+body>menu,
+body>footer {
     background: white;
     width: 100%;
     position: fixed;
@@ -93,13 +92,13 @@ body > footer {
     margin: 0;
 }
 
-body > aside[role="region"] {
+body>aside[role="region"] {
     top: 0;
     height: 13em;
     z-index: 1;
 }
 
-body > menu {
+body>menu {
     top: 13em;
     line-height: 2em;
     width: 100%;
@@ -107,18 +106,18 @@ body > menu {
     z-index: 1;
 }
 
-body > main {
+body>main {
     margin: 15em auto 3em;
     padding: 0 0.5em;
     max-width: 55em;
     width: calc(100% - 1em);
 }
 
-main > section.loading {
+main>section.loading {
     position: relative;
 }
 
-main > section.loading:before {
+main>section.loading:before {
     content: '';
     display: block;
     position: absolute;
@@ -128,7 +127,7 @@ main > section.loading:before {
     height: 100%;
 }
 
-main > section.loading:after{
+main>section.loading:after {
     content: '';
     box-sizing: border-box;
     position: absolute;
@@ -186,14 +185,14 @@ main tbody span.benefactor:after {
     content: ')';
 }
 
-body > footer {
+body>footer {
     bottom: 0;
     height: 3em;
     text-align: center;
     font-size: small;
 }
 
-body > footer .social-icon::before {
+body>footer .social-icon::before {
     content: ' ';
     background-size: contain;
     background-position: center;
@@ -204,11 +203,11 @@ body > footer .social-icon::before {
     background-repeat: no-repeat;
 }
 
-body > footer .social-icon.github::before {
+body>footer .social-icon.github::before {
     background-image: url('images/github.svg');
 }
 
-body > footer .social-icon.paypal::before {
+body>footer .social-icon.paypal::before {
     background-image: url('images/paypal.svg');
 }
 
@@ -269,7 +268,7 @@ dialog input {
 dialog label input[type="checkbox"],
 dialog label input[type="radio"] {
     position: absolute;
-    width:  auto;
+    width: auto;
     top: 0.4em;
     right: 0;
 }
@@ -374,15 +373,14 @@ div.input-group span.before {
     padding: 0;
 }
 
-
-div.input-group span.before + input {
+div.input-group span.before+input {
     left: 0;
     padding-left: 2.2em;
     bottom: 0;
     width: calc(45% - 4.4em);
 }
 
-div.input-group input + span.after {
+div.input-group input+span.after {
     position: absolute;
     right: 0.3em;
     top: 1px;
@@ -395,7 +393,7 @@ dialog div.input-group {
     margin-bottom: 0.4em;
 }
 
-dialog div.input-group span.before + input {
+dialog div.input-group span.before+input {
     width: calc(100% - 4.4em);
 }
 
@@ -425,53 +423,42 @@ dialog div.input-group span.before + input {
     aside[role="region"] label {
         margin-left: 1em;
     }
-
     menu a {
         padding: 0.5em;
     }
-
-    body > main {
+    body>main {
         margin-bottom: 4.5em;
     }
-
-    body > footer {
+    body>footer {
         height: 4.5em;
     }
-
     #tab-settings {
         line-height: 1.6em;
     }
-
     div.input-group label {
         width: 100%;
         display: block;
     }
-
     div.input-group input,
-    div.input-group select  {
+    div.input-group select {
         position: static;
     }
-
-    div.input-group label + input {
+    div.input-group label+input {
         width: calc(100% - 2.4em);
     }
-
-    div.input-group label + select {
+    div.input-group label+select {
         width: 100%;
     }
-
-    div.input-group input + span.after {
+    div.input-group input+span.after {
         display: inline-block;
         position: absolute;
         right: 0.3em;
         left: initial;
         top: 2.5em;
     }
-
     .desktop {
         display: none;
     }
-
     .mobile {
         display: initial;
     }
@@ -483,7 +470,6 @@ dialog div.input-group span.before + input {
         justify-content: center;
         align-items: stretch;
     }
-
     .controls button {
         width: 100%;
         display: inline-flex;
@@ -491,7 +477,6 @@ dialog div.input-group span.before + input {
         justify-content: center;
         margin-right: 0.4em;
     }
-
     .controls button:last-child {
         margin-right: none;
     }
@@ -502,7 +487,6 @@ dialog div.input-group span.before + input {
         margin-left: 0.4em;
         width: 35%;
     }
-
     menu a,
     menu a:visited,
     menu a:active {
@@ -510,8 +494,27 @@ dialog div.input-group span.before + input {
     }
 }
 
+@media (prefers-color-scheme: dark) {
+    body,
+    #unsupportedBrowser,
+    body>aside[role="region"],
+    body>menu,
+    body>footer,
+    menu a,
+    menu a:visited,
+    dialog,
+    footer a,
+    footer a:visited {
+        background-color: black;
+        color: white;
+    }
+    dialog {
+        border: 1px solid white;
+    }
+}
+
 @keyframes spinner {
     to {
         transform: rotate(360deg);
     }
-  }
+}
