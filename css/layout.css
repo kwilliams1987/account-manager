@@ -453,8 +453,8 @@ dialog div.input-group span.before+input {
         left: initial;
         top: 2.5em;
     }
-    footer {
-        position: relative;
+    body>footer {
+        position: relative !important;
     }
     .desktop {
         display: none;
