@@ -82,7 +82,7 @@ aside[role="dialog"] button {
 }
 
 body>aside[role="region"],
-body>menu,
+body>nav,
 body>footer {
     background: white;
     width: 100%;
@@ -98,7 +98,7 @@ body>aside[role="region"] {
     z-index: 1;
 }
 
-body>menu {
+body>nav {
     top: 13em;
     line-height: 2em;
     width: 100%;
@@ -210,17 +210,17 @@ body>footer .social-icon.paypal::before {
     background-image: url('images/paypal.svg');
 }
 
-menu a {
+nav a {
     padding: 0.5em 1em;
 }
 
-menu a,
-menu a:visited,
-menu a:active {
+nav a,
+nav a:visited,
+nav a:active {
     color: black;
 }
 
-menu a.active {
+nav a.active {
     text-decoration: none;
 }
 
@@ -322,7 +322,7 @@ dialog div.controls button:last-child {
 }
 
 .unsupported aside,
-.unsupported menu,
+.unsupported nav,
 .unsupported main,
 .unsupported hr {
     display: none;
@@ -422,11 +422,14 @@ dialog div.input-group span.before+input {
     aside[role="region"] label {
         margin-left: 1em;
     }
-    menu a {
+    nav a {
         padding: 0.5em;
     }
     #tab-settings {
         line-height: 1.6em;
+    }
+    body>main {
+        margin-bottom: 1em;
     }
     div.input-group label {
         width: 100%;
@@ -448,6 +451,9 @@ dialog div.input-group span.before+input {
         right: 0.3em;
         left: initial;
         top: 2.5em;
+    }
+    footer {
+        position: relative;
     }
     .desktop {
         display: none;
@@ -480,9 +486,9 @@ dialog div.input-group span.before+input {
         margin-left: 0.4em;
         width: 35%;
     }
-    menu a,
-    menu a:visited,
-    menu a:active {
+    nav a,
+    nav a:visited,
+    nav a:active {
         padding: 0.4em 0;
     }
 }
@@ -491,10 +497,10 @@ dialog div.input-group span.before+input {
     body,
     #unsupportedBrowser,
     body>aside[role="region"],
-    body>menu,
+    body>nav,
     body>footer,
-    menu a,
-    menu a:visited,
+    nav a,
+    nav a:visited,
     dialog,
     footer a,
     footer a:visited {
