@@ -107,7 +107,6 @@ body>menu {
 }
 
 body>main {
-    margin: 15em auto 3em;
     padding: 0 0.5em;
     max-width: 55em;
     width: calc(100% - 1em);
@@ -425,12 +424,6 @@ dialog div.input-group span.before+input {
     }
     menu a {
         padding: 0.5em;
-    }
-    body>main {
-        margin-bottom: 4.5em;
-    }
-    body>footer {
-        height: 4.5em;
     }
     #tab-settings {
         line-height: 1.6em;
