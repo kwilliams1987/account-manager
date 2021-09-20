@@ -107,6 +107,7 @@ body>nav {
 }
 
 body>main {
+    margin: 15em auto 3em;
     padding: 0 0.5em;
     max-width: 55em;
     width: calc(100% - 1em);
